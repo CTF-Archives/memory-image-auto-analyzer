@@ -14,30 +14,6 @@ os.environ['QT_API'] = 'pyside6'
 config = {"imagefile": ""}
 
 
-class CustomDialog(QDialog):
-    """自定义对话框"""
-
-    def __init__(self, message="Error!", parent=None):
-        super().__init__(parent)
-
-        self.setWindowTitle("Error!")
-        # 创建一个确认键和取消键
-        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        # 创建对话框按钮
-        self.buttonBox = QDialogButtonBox(QBtn)
-        # 对话框确认信号连接到确认槽函数
-        self.buttonBox.accepted.connect(self.accept)
-        # 对话框取消按钮连接到取消槽函数
-        self.buttonBox.rejected.connect(self.reject)
-        # 设置垂直布局
-        self.layout = QVBoxLayout()
-        # 设置对话框中要显示的内容
-        message = QLabel("未选择有效的内存镜像文件!")
-        self.layout.addWidget(message)
-        self.layout.addWidget(self.buttonBox)
-        self.setLayout(self.layout)
-
-
 class MainWindow(QMainWindow):
 
     def __init__(self):
@@ -137,10 +113,12 @@ class MainWindow(QMainWindow):
         logging.info(s)
 
     def start_process(self):
-        if config["imagefile"]=="":
-            dislog_error=CustomDialog
-            dislog_error
-            dislog_error("123").exec()
+        if config["imagefile"] == "":
+            logging.warning("未指定文件")
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Warning!")
+            dlg.setText("未选择有效的内存镜像文件!")
+            dlg.exec_()
             return 0
         if self.p is None:  # No process running.
             self.message("Executing process")
