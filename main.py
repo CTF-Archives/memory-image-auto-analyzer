@@ -33,6 +33,9 @@ class LogWindow(QWidget):
         self.setLayout(self.layout)
         self.setMinimumSize(800, 500)
 
+    def closeEvent(self, event):
+        self.hide()
+
 
 class MainWindow(QMainWindow):
 
@@ -54,7 +57,9 @@ class MainWindow(QMainWindow):
 
         # 设置变量
         self.process_vol_v2 = None
-        self.w = None
+        self.w = LogWindow()
+        self.w.show()
+        self.w.hide()
 
         # 设置工具栏
         self.set_ToolBar()
@@ -111,9 +116,6 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(button_action)
 
     def show_log(self):
-        print("show log")
-        if self.w is None:
-            self.w = LogWindow()
         self.w.show()
 
     def print_res(self):
