@@ -48,6 +48,7 @@ class vol_backend_v2(QProcess):
     def __init__(self, imagefile: str, parent=None) -> None:
         super().__init__(parent)
         self.imagefile = imagefile
+        self.res_imagefile = ""
 
     def message(self, s):
         logging.info(s)
@@ -69,6 +70,7 @@ class vol_backend_v2(QProcess):
         data = self.process.readAllStandardOutput()
         stdout = bytes(data).decode("utf8")
         self.message(stdout)
+        self.res_imagefile += stdout
 
     def handle_state(self, state):
         states = {

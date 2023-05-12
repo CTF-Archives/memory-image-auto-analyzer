@@ -116,6 +116,9 @@ class MainWindow(QMainWindow):
             self.w = LogWindow()
         self.w.show()
 
+    def print_res(self):
+        print(self.process_vol_v2.res_imagefile)
+
     # 选取镜像文件
     def OpenFile(self):
         filename = QFileDialog.getOpenFileName(parent=self, caption='Open file', dir='.', filter='*')[0]
@@ -149,7 +152,6 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         for window in QApplication.topLevelWidgets():
             window.close()
-        sys.exit(0)
 
 
 if __name__ == "__main__":
