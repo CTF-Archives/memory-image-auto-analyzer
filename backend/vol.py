@@ -1,6 +1,4 @@
-from typing import Optional
-from PySide6.QtCore import QObject, QThread, Signal, Slot, QRunnable
-import subprocess
+from PySide6.QtCore import QObject, Signal, Slot, QRunnable, QProcess
 import logging
 import traceback
 import sys
@@ -43,3 +41,44 @@ class Worker(QRunnable):
             self.signals.result.emit(result)  # Return the result of the processing
         finally:
             self.signals.finished.emit()  # Done
+
+
+class vol_backend_v2(QProcess):
+
+    def __init__(self, imagefile: str, parent=None) -> None:
+        super().__init__(parent)
+        self.imagefile = imagefile
+
+    def message(self, s):
+        logging.info(s)
+
+    def imageinfo(self):
+        self.process = QProcess()  # Keep a reference to the QProcess (e.g. on self) while it's running.
+        self.process.readyReadStandardOutput.connect(self.handle_stdout)
+        self.process.readyReadStandardError.connect(self.handle_stderr)
+        self.process.stateChanged.connect(self.handle_state)
+        self.process.finished.connect(self.process_finished)  # Clean up once complete.
+        self.process.start("vol.py", ["-f", self.imagefile, "imageinfo"])
+
+    def handle_stderr(self):
+        data = self.process.readAllStandardError()
+        stderr = bytes(data).decode("utf8")
+        self.message(stderr)
+
+    def handle_stdout(self):
+        data = self.process.readAllStandardOutput()
+        stdout = bytes(data).decode("utf8")
+        self.message(stdout)
+
+    def handle_state(self, state):
+        states = {
+            QProcess.NotRunning: 'Not running',
+            QProcess.Starting: 'Starting',
+            QProcess.Running: 'Running',
+        }
+        state_name = states[state]
+        self.message(f"State changed: {state_name}")
+
+    def process_finished(self):
+        self.message("Process finished.")
+        self.p = None
