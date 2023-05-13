@@ -127,8 +127,7 @@ class MainWindow(QMainWindow):
         if self.process_vol_v2 is None:  # No process running.
             logging.info("Executing process")
             self.process_vol_v2 = vol_backend_v2(self)
-            self.process_vol_v2.finished.connect(self.process_finished)  # Clean up once complete.
-            self.process_vol_v2.imageinfo(config["imagefile"])
+            self.process_vol_v2.imageinfo(config["imagefile"],self.process_finished)
 
     def process_finished(self):
         logging.info("Process finished.")

@@ -5,56 +5,19 @@ import sys
 from backend.res import core_res
 
 
-class WorkerSignals(QObject):
-    finished = Signal()
-    error = Signal(tuple)
-    result = Signal(object)
-    progress = Signal(int)
-
-
-class Worker(QRunnable):
-
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.signals = WorkerSignals()
-
-        # Add the callback to our kwargs
-        self.kwargs['progress_callback'] = self.signals.progress
-        pass
-
-    @Slot()
-    def run(self):
-        '''
-        Initialise the runner function with passed args, kwargs.
-        '''
-
-        # Retrieve args/kwargs here; and fire processing using them
-        try:
-            result = self.fn(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            self.signals.result.emit(result)  # Return the result of the processing
-        finally:
-            self.signals.finished.emit()  # Done
-
-
 class vol_backend_v2(QProcess):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self.process = None
 
-    def imageinfo(self, imagefile: str):
+    def imageinfo(self, imagefile: str, func_finished):
         self.process = QProcess()  # Keep a reference to the QProcess (e.g. on self) while it's running.
         self.process.readyReadStandardOutput.connect(self.handle_stdout)
         self.process.readyReadStandardError.connect(self.handle_stderr)
         self.process.stateChanged.connect(self.handle_state)
-        self.process.finished.connect(self.process_finished)  # Clean up once complete.
+        # self.process.finished.connect(self.process_finished)  # Clean up once complete.
+        self.process.finished.connect(func_finished)
         self.process.start("vol.py", ["-f", imagefile, "imageinfo"])
 
     def handle_stderr(self):
@@ -78,4 +41,4 @@ class vol_backend_v2(QProcess):
         logging.debug(f"State changed: {state_name}")
 
     def process_finished(self):
-        logging.debug("Process finished.")
+        logging.debug("Process finished.11?")
