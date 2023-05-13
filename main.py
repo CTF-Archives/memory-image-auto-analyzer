@@ -6,8 +6,9 @@ from PySide6.QtGui import QAction
 import qdarkstyle
 import logging
 from qtawesome import icon
-from layout.QTextEditLogger import QTextEditLogger
+from layout.window_log import LogWindow
 from backend.vol import vol_backend_v2
+from backend.res import core_res
 
 os.environ['QT_API'] = 'pyside6'
 
@@ -16,34 +17,13 @@ config = {"imagefile": ""}
 res = ""
 
 
-class LogWindow(QWidget):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.logTextBox = QTextEditLogger(self)
-        self.logTextBox.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - module: %(module)s - funcName: %(funcName)s\n--> %(message)s\n'))
-        logging.getLogger().addHandler(self.logTextBox)
-        logging.getLogger().setLevel(logging.DEBUG)
-
-        self.layout = QVBoxLayout()
-        message = QLabel("如遇到非预期错误，请提供详细日志")
-        self.layout.addWidget(message)
-        self.layout.addWidget(self.logTextBox.widget)
-        self.setLayout(self.layout)
-        self.setMinimumSize(800, 500)
-
-    def closeEvent(self, event):
-        self.hide()
-
-
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Memory image auto-analyzer")
-        self.setMinimumSize(1200, 800)
+        self.setMinimumSize(1000, 700)
 
         # 设置项储存
         # self.settings = QSettings()
@@ -52,7 +32,6 @@ class MainWindow(QMainWindow):
         self.set_MenuBar()
 
         # 设置状态栏
-        # 独立出来做一个窗体
         self.setStatusBar(QStatusBar(self))
 
         # 设置变量
@@ -106,31 +85,36 @@ class MainWindow(QMainWindow):
         self.addToolBar(self.toolbar)
 
         button_action = QAction("show log", self)
-        button_action.setStatusTip("This is your button")
+        button_action.setStatusTip("显示日志窗口")
         button_action.triggered.connect(self.show_log)
         self.toolbar.addAction(button_action)
 
         button_action = QAction("imageinfo", self)
-        button_action.setStatusTip("This is your button")
+        button_action.setStatusTip("运行imageinfo模块")
         button_action.triggered.connect(self.start_process)
+        self.toolbar.addAction(button_action)
+
+        button_action = QAction("print res", self)
+        button_action.setStatusTip("测试res返回机制及数据传递")
+        button_action.triggered.connect(self.print_res)
         self.toolbar.addAction(button_action)
 
     def show_log(self):
         self.w.show()
 
     def print_res(self):
-        print(self.process_vol_v2.res_imagefile)
+        res = core_res.get_res()
+        res = res.split("\n")
+        res = [i for i in res if i != ""]
+        res = [i.replace(" ", "").split(":") for i in res]
+        print(res, sep="\n")
 
     # 选取镜像文件
     def OpenFile(self):
         filename = QFileDialog.getOpenFileName(parent=self, caption='Open file', dir='.', filter='*')[0]
         if filename:
-            print(filename)
             config["imagefile"] = filename
             logging.info("select image file:" + filename)
-
-    def message(self, s):
-        logging.info(s)
 
     def start_process(self):
         if config["imagefile"] == "":
@@ -141,15 +125,14 @@ class MainWindow(QMainWindow):
             dlg.exec()
             return 0
         if self.process_vol_v2 is None:  # No process running.
-            self.message("Executing process")
-            self.process_vol_v2 = vol_backend_v2(config["imagefile"], self)
+            logging.info("Executing process")
+            self.process_vol_v2 = vol_backend_v2(self)
             self.process_vol_v2.finished.connect(self.process_finished)  # Clean up once complete.
-            self.process_vol_v2.imageinfo()
+            self.process_vol_v2.imageinfo(config["imagefile"])
 
     def process_finished(self):
-        self.message("Process finished.")
+        logging.info("Process finished.")
         self.p = None
-        print(res)
 
     def closeEvent(self, event):
         for window in QApplication.topLevelWidgets():
@@ -157,12 +140,10 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-
-    def app_quit():
-        exit(0)
-
     app = QApplication(sys.argv)
-    app.setStyleSheet(qdarkstyle.load_stylesheet())
+    dark_mode = False
+    if dark_mode:
+        app.setStyleSheet(qdarkstyle.load_stylesheet())
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
