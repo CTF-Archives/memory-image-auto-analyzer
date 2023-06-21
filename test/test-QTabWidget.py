@@ -1,49 +1,34 @@
 import sys
-from PySide6.QtWidgets import QApplication, QWidget,  QFormLayout, QGridLayout, QTabWidget, QLineEdit, QDateEdit, QPushButton
-from PySide6.QtCore import Qt
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QAction
 
+class Main_window(QtWidgets.QMainWindow):
+    def __init__(self, parent=None):
+        super(Main_window, self).__init__(parent)
+        self.setGeometry(50, 50, 1100, 750)
+        self.setWindowTitle("Programm")  
 
-class MainWindow(QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        open_new_file = QAction('New', self)
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu('Projekt')
+        fileMenu.addAction(open_new_file)
 
-        self.setWindowTitle('PyQt QTabWidget')
+        self.tabWidget = QtWidgets.QTabWidget()
+        self.setCentralWidget(self.tabWidget)
 
-        main_layout = QGridLayout(self)
-        self.setLayout(main_layout)
+        self.tab_v1 = QtWidgets.QWidget()
+        self.tabWidget.addTab(self.tab_v1, "Tab 1")
+        self.openFile =QtWidgets.QPushButton("Choose Tab ", self.tab_v1)
+        self.openFile.setGeometry(QtCore.QRect(700, 25, 200, 30))
 
-        # create a tab widget
-        tab = QTabWidget(self)
+        self.tab_v2 = QtWidgets.QWidget()
+        self.tabWidget.addTab(self.tab_v2, "Tab 2")
 
-        # personal page
-        personal_page = QWidget(self)
-        layout = QFormLayout()
-        personal_page.setLayout(layout)
-        layout.addRow('First Name:', QLineEdit(self))
-        layout.addRow('Last Name:', QLineEdit(self))
-        layout.addRow('DOB:', QDateEdit(self))
-
-        # contact pane
-        contact_page = QWidget(self)
-        layout = QFormLayout()
-        contact_page.setLayout(layout)
-        layout.addRow('Phone Number:', QLineEdit(self))
-        layout.addRow('Email Address:', QLineEdit(self))
-
-        # add pane to the tab widget
-        tab.addTab(personal_page, 'Personal Info')
-        tab.addTab(contact_page, 'Contact Info')
-
-        main_layout.addWidget(tab, 0, 0, 2, 1)
-        main_layout.addWidget(QPushButton('Save'), 2, 0,
-                              alignment=Qt.AlignmentFlag.AlignLeft)
-        main_layout.addWidget(QPushButton('Cancel'), 2, 0,
-                              alignment=Qt.AlignmentFlag.AlignRight)
-
-        self.show()
-
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    ex = Main_window()
+    ex.show()
+    sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    sys.exit(app.exec())
+    main()

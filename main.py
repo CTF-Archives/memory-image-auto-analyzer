@@ -1,8 +1,8 @@
 import sys
 import os
-from PySide6.QtCore import QProcess, QSettings, Qt, QEvent
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import *
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QPalette, QColor
 import qdarkstyle
 import logging
 from qtawesome import icon
@@ -40,17 +40,54 @@ class MainWindow(QMainWindow):
         self.w.show()
         self.w.hide()
 
-        self.ToolsBTN1 = QPushButton('测试1', self)
-        self.ToolsBTN2 = QPushButton('测试2', self)
-        self.ToolsBTN2.clicked.connect(self.log_test)
-        self.stack = QStackedWidget(self)
-        self.stack.addWidget(self.ToolsBTN2)
-        self.stack.addWidget(self.ToolsBTN1)
-        self.setCentralWidget(self.stack)
+        # 设置结果输出界面
+        self.setResultBlok()
+
+    def setResultBlok(self):
+        self.tabWidget = QTabWidget()
+        self.setCentralWidget(self.tabWidget)
+
+        # 基础信息页面
+        Tab_BasicInfo_pagelayout = QVBoxLayout()
+        Tab_BasicInfo_button_layout = QHBoxLayout()
+        Tab_BasicInfo_info_layout = QVBoxLayout()
+
+        Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_button_layout)
+        Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_info_layout)
+
+        Btn_BasicInfo_start = QPushButton("开始基础信息分析")
+        Tab_BasicInfo_button_layout.addWidget(Btn_BasicInfo_start)
+
+        Btn_BasicInfo_export = QPushButton("保存基础信息报告")
+        Tab_BasicInfo_button_layout.addWidget(Btn_BasicInfo_export)
+
+        self.Tab_BasicInfo_child = QTabWidget()
+        Tab_BasicInfo_info_layout.addWidget(self.Tab_BasicInfo_child)
+
+        self.tab_result_raw = QWidget()
+        self.tab_result_raw.setLayout(Tab_BasicInfo_pagelayout)
+        self.set_tab_BasicInfo(self.Tab_BasicInfo_child)
+        self.tabWidget.addTab(self.tab_result_raw, "基础信息")
+
+        # 进程信息页面
+        pass
+
+    def set_tab_BasicInfo(self, widget: QTabWidget):
+        """
+        设置BasicInfo标签页
+        """
+        Tab_BasicInfo_child_imageinfo = QWidget()
+        Tab_BasicInfo_child_pslist = QWidget()
+        Tab_BasicInfo_child_cmdline = QWidget()
+        Tab_BasicInfo_child_iehistory = QWidget()
+        widget.addTab(Tab_BasicInfo_child_imageinfo, "imageinfo")
+        widget.addTab(Tab_BasicInfo_child_pslist, "pslist")
+        widget.addTab(Tab_BasicInfo_child_cmdline, "cmdline")
+        widget.addTab(Tab_BasicInfo_child_iehistory, "iehistory")
 
     def set_MenuBar(self):
         menu_bar = self.menuBar()
-        menu_bar.setContextMenuPolicy(Qt.PreventContextMenu)
+        menu_bar.setContextMenuPolicy(Qt.PreventContextMenu)  # 禁用右键菜单
         menu_bar_size = menu_bar.font()
         menu_bar_size.setPointSize(9)
         menu_bar.setFont(menu_bar_size)
@@ -62,6 +99,7 @@ class MainWindow(QMainWindow):
         action_OpenNewFile.setStatusTip("打开内存镜像文件")
         action_OpenNewFile.triggered.connect(self.OpenFile)
         menu_file.addAction(action_OpenNewFile)
+        # 增加分隔符
         menu_file.addSeparator()
         action_ApplicationQuit = QAction(icon("fa5s.door-open"), "退出", self)
         action_ApplicationQuit.setStatusTip("退出程序")
@@ -75,9 +113,6 @@ class MainWindow(QMainWindow):
         action_ShowLog.setStatusTip("显示程序日志")
         action_ShowLog.triggered.connect(self.show_log)
         menu_help.addAction(action_ShowLog)
-
-    def log_test(self):
-        logging.debug("Log debuging " + "~" * 80)
 
     def show_log(self):
         self.w.show()

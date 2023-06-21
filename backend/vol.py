@@ -1,7 +1,5 @@
 from PySide6.QtCore import QProcess
 import logging
-import traceback
-import sys
 from backend.res import core_res
 
 

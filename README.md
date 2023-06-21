@@ -1,6 +1,10 @@
 # Memory image auto-analyzer
 ## 一个雏形，一个基于Volatility进行可视化、自动化内存镜像分析的工具
 
+目前面对Windows平台的内存数据，后端基于Volatility2
+
+后端Volatiliy2，基于在环境中已经安装的Volatility2（即直接运行vol.py）
+
 ## TODO - 项目规划-windows
 - 建立一键分析，包括imageinfo，pslist，pstree，filescan（加入常见目录筛选），ishistory和cmdscan
 - pslist和pstree整合进树状组件，支持选中进程进行dump（memdump和procdump）
