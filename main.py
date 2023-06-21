@@ -45,6 +45,7 @@ class MainWindow(QMainWindow):
 
         self.ToolsBTN1 = QPushButton('测试1', self)
         self.ToolsBTN2 = QPushButton('测试2', self)
+        self.ToolsBTN2.clicked.connect(self.log_test)
         self.stack = QStackedWidget(self)
         self.stack.addWidget(self.ToolsBTN2)
         self.stack.addWidget(self.ToolsBTN1)
@@ -99,6 +100,9 @@ class MainWindow(QMainWindow):
         button_action.triggered.connect(self.print_res)
         self.toolbar.addAction(button_action)
 
+    def log_test(self):
+        logging.debug("Log debuging " + "~" * 80)
+
     def show_log(self):
         self.w.show()
 
@@ -127,7 +131,7 @@ class MainWindow(QMainWindow):
         if self.process_vol_v2 is None:  # No process running.
             logging.info("Executing process")
             self.process_vol_v2 = vol_backend_v2(self)
-            self.process_vol_v2.imageinfo(config["imagefile"],self.process_finished)
+            self.process_vol_v2.imageinfo(config["imagefile"], self.process_finished)
 
     def process_finished(self):
         logging.info("Process finished.")

@@ -8,6 +8,8 @@ class QTextEditLogger(logging.Handler):
         super().__init__()
         self.widget = QPlainTextEdit(parent)
         self.widget.setReadOnly(True)
+        self.widget.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+        self.widget.verticalScrollBar().minimum()
 
     def emit(self, record):
         msg = self.format(record)
