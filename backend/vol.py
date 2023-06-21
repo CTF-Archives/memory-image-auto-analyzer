@@ -9,23 +9,26 @@ class vol_backend_v2(QProcess):
         super().__init__(parent)
         self.process = None
 
-    def imageinfo(self, imagefile: str, func_finished):
+    def func(self, imagefile: str, module: str, func_finished):
+        """
+        调用Volatility2进行镜像分析
+        """
         self.process = QProcess()  # Keep a reference to the QProcess (e.g. on self) while it's running.
         self.process.readyReadStandardOutput.connect(self.handle_stdout)
         self.process.readyReadStandardError.connect(self.handle_stderr)
         self.process.stateChanged.connect(self.handle_state)
         # self.process.finished.connect(self.process_finished)  # Clean up once complete.
         self.process.finished.connect(func_finished)
-        self.process.start("vol.py", ["-f", imagefile, "imageinfo"])
+        self.process.start("vol.py", ["-f", imagefile, module])
 
     def handle_stderr(self):
         data = self.process.readAllStandardError()
-        stderr = bytes(data).decode("utf8")
+        stderr = bytes(data).decode()
         logging.error(stderr)
 
     def handle_stdout(self):
         data = self.process.readAllStandardOutput()
-        stdout = bytes(data).decode("utf8")
+        stdout = bytes(data).decode()
         logging.info(stdout)
         core_res.add_res(stdout)
 
@@ -39,4 +42,4 @@ class vol_backend_v2(QProcess):
         logging.debug(f"State changed: {state_name}")
 
     def process_finished(self):
-        logging.debug("Process finished.11?")
+        logging.debug("Process finished")

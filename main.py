@@ -12,7 +12,7 @@ from backend.res import core_res
 
 os.environ['QT_API'] = 'pyside6'
 
-config = {"imagefile": ""}
+config = {"imagefile": "", "profile": ""}
 
 res = ""
 
@@ -47,6 +47,30 @@ class MainWindow(QMainWindow):
         self.tabWidget = QTabWidget()
         self.setCentralWidget(self.tabWidget)
 
+        # 镜像文件信息页面
+        Tab_ImageInfo_pagelayout = QVBoxLayout()
+        Tab_ImageInfo_button_layout = QHBoxLayout()
+        Tab_ImageInfo_info_layout = QVBoxLayout()
+
+        Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_button_layout)
+        Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_info_layout)
+
+        Btn_ImageInfo_start = QPushButton("开始分析")
+        Btn_ImageInfo_start.pressed.connect(self.start_process)
+        Tab_ImageInfo_button_layout.addWidget(Btn_ImageInfo_start)
+
+        Btn_ImageInfo_export = QPushButton("保存报告")
+        Tab_ImageInfo_button_layout.addWidget(Btn_ImageInfo_export)
+
+        # FIXME 镜像信息加上根据profile返回值更新的下拉框，以及展示界面，不使用TabWidget
+        self.Tab_ImageInfo_child = QTabWidget()
+        Tab_ImageInfo_info_layout.addWidget(self.Tab_ImageInfo_child)
+
+        self.tab_result_raw = QWidget()
+        self.tab_result_raw.setLayout(Tab_ImageInfo_pagelayout)
+        self.set_tab_ImageInfo(self.Tab_ImageInfo_child)
+        self.tabWidget.addTab(self.tab_result_raw, "镜像信息")
+
         # 基础信息页面
         Tab_BasicInfo_pagelayout = QVBoxLayout()
         Tab_BasicInfo_button_layout = QHBoxLayout()
@@ -55,10 +79,11 @@ class MainWindow(QMainWindow):
         Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_button_layout)
         Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_info_layout)
 
-        Btn_BasicInfo_start = QPushButton("开始基础信息分析")
+        Btn_BasicInfo_start = QPushButton("开始分析")
+        Btn_BasicInfo_start.pressed.connect(self.start_process)
         Tab_BasicInfo_button_layout.addWidget(Btn_BasicInfo_start)
 
-        Btn_BasicInfo_export = QPushButton("保存基础信息报告")
+        Btn_BasicInfo_export = QPushButton("保存报告")
         Tab_BasicInfo_button_layout.addWidget(Btn_BasicInfo_export)
 
         self.Tab_BasicInfo_child = QTabWidget()
@@ -70,20 +95,22 @@ class MainWindow(QMainWindow):
         self.tabWidget.addTab(self.tab_result_raw, "基础信息")
 
         # 进程信息页面
+        # TODO 做一个专门展示进程信息的TabWidget
         pass
 
     def set_tab_BasicInfo(self, widget: QTabWidget):
         """
         设置BasicInfo标签页
         """
-        Tab_BasicInfo_child_imageinfo = QWidget()
         Tab_BasicInfo_child_pslist = QWidget()
         Tab_BasicInfo_child_cmdline = QWidget()
         Tab_BasicInfo_child_iehistory = QWidget()
-        widget.addTab(Tab_BasicInfo_child_imageinfo, "imageinfo")
         widget.addTab(Tab_BasicInfo_child_pslist, "pslist")
         widget.addTab(Tab_BasicInfo_child_cmdline, "cmdline")
         widget.addTab(Tab_BasicInfo_child_iehistory, "iehistory")
+
+    def set_tab_ImageInfo(self, widget: QTabWidget):
+        pass
 
     def set_MenuBar(self):
         menu_bar = self.menuBar()
@@ -113,6 +140,10 @@ class MainWindow(QMainWindow):
         action_ShowLog.setStatusTip("显示程序日志")
         action_ShowLog.triggered.connect(self.show_log)
         menu_help.addAction(action_ShowLog)
+        action_ShowRes = QAction(icon("ri.newspaper-line"), "Debug 显示输出", self)
+        action_ShowRes.setStatusTip("打印最新一次输出")
+        action_ShowRes.triggered.connect(self.print_res)
+        menu_help.addAction(action_ShowRes)
 
     def show_log(self):
         self.w.show()
@@ -131,7 +162,7 @@ class MainWindow(QMainWindow):
             config["imagefile"] = filename
             logging.info("select image file:" + filename)
 
-    def start_process(self):
+    def start_process(self, module: str):
         if config["imagefile"] == "":
             logging.warning("未指定文件")
             dlg = QMessageBox(self)
@@ -140,9 +171,12 @@ class MainWindow(QMainWindow):
             dlg.exec()
             return 0
         if self.process_vol_v2 is None:  # No process running.
+            # FIXME 解决多线程同时执行的问题
             logging.info("Executing process")
             self.process_vol_v2 = vol_backend_v2(self)
-            self.process_vol_v2.imageinfo(config["imagefile"], self.process_finished)
+            self.process_vol_v2.func(config["imagefile"], "pslist", self.process_finished)
+            self.process_vol_v2.func(config["imagefile"], "cmdline", self.process_finished)
+            self.process_vol_v2.func(config["imagefile"], "iehistory", self.process_finished)
 
     def process_finished(self):
         logging.info("Process finished.")

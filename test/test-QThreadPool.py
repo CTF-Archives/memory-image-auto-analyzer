@@ -5,6 +5,7 @@ import sys
 import time
 import traceback
 
+# https://www.pythonguis.com/tutorials/multithreading-pyside6-applications-qthreadpool/
 
 class WorkerSignals(QObject):
     '''
@@ -141,4 +142,4 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv) 
 
 window = MainWindow()
-app.exec_()
+app.exec()
