@@ -40,9 +40,6 @@ class MainWindow(QMainWindow):
         self.w.show()
         self.w.hide()
 
-        # 设置工具栏
-        self.set_ToolBar()
-
         self.ToolsBTN1 = QPushButton('测试1', self)
         self.ToolsBTN2 = QPushButton('测试2', self)
         self.ToolsBTN2.clicked.connect(self.log_test)
@@ -78,27 +75,6 @@ class MainWindow(QMainWindow):
         action_ShowLog.setStatusTip("显示程序日志")
         action_ShowLog.triggered.connect(self.show_log)
         menu_help.addAction(action_ShowLog)
-
-    def set_ToolBar(self):
-        self.toolbar = QToolBar("My main toolbar")
-        self.toolbar.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.toolbar.setMovable(False)
-        self.addToolBar(self.toolbar)
-
-        button_action = QAction("show log", self)
-        button_action.setStatusTip("显示日志窗口")
-        button_action.triggered.connect(self.show_log)
-        self.toolbar.addAction(button_action)
-
-        button_action = QAction("imageinfo", self)
-        button_action.setStatusTip("运行imageinfo模块")
-        button_action.triggered.connect(self.start_process)
-        self.toolbar.addAction(button_action)
-
-        button_action = QAction("print res", self)
-        button_action.setStatusTip("测试res返回机制及数据传递")
-        button_action.triggered.connect(self.print_res)
-        self.toolbar.addAction(button_action)
 
     def log_test(self):
         logging.debug("Log debuging " + "~" * 80)
