@@ -44,6 +44,9 @@ class MainWindow(QMainWindow):
         self.setResultBlok()
 
     def setResultBlok(self):
+        """
+        设置结果输出页面
+        """
         self.tabWidget = QTabWidget()
         self.setCentralWidget(self.tabWidget)
 
@@ -55,21 +58,22 @@ class MainWindow(QMainWindow):
         Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_button_layout)
         Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_info_layout)
 
-        Btn_ImageInfo_start = QPushButton("开始分析")
-        Btn_ImageInfo_start.pressed.connect(self.start_process)
-        Tab_ImageInfo_button_layout.addWidget(Btn_ImageInfo_start)
+        self.Btn_ImageInfo_start = QPushButton("开始分析")
+
+        self.Btn_ImageInfo_start.pressed.connect(self.process_ImageInfo)
+        Tab_ImageInfo_button_layout.addWidget(self.Btn_ImageInfo_start)
 
         Btn_ImageInfo_export = QPushButton("保存报告")
         Tab_ImageInfo_button_layout.addWidget(Btn_ImageInfo_export)
 
-        # FIXME 镜像信息加上根据profile返回值更新的下拉框，以及展示界面，不使用TabWidget
-        self.Tab_ImageInfo_child = QTabWidget()
-        Tab_ImageInfo_info_layout.addWidget(self.Tab_ImageInfo_child)
+        # FIXME 镜像信息加上根据profile返回值更新的下拉框，以及展示界面
+        self.Tab_ImageInfo_res = QTableWidget()
+        Tab_ImageInfo_info_layout.addWidget(self.Tab_ImageInfo_res)
 
-        self.tab_result_raw = QWidget()
-        self.tab_result_raw.setLayout(Tab_ImageInfo_pagelayout)
-        self.set_tab_ImageInfo(self.Tab_ImageInfo_child)
-        self.tabWidget.addTab(self.tab_result_raw, "镜像信息")
+        self.Tab_ImageInfo = QWidget()
+        self.Tab_ImageInfo.setLayout(Tab_ImageInfo_pagelayout)
+        self.set_tab_ImageInfo(self.Tab_ImageInfo_res)
+        self.tabWidget.addTab(self.Tab_ImageInfo, "镜像信息")
 
         # 基础信息页面
         Tab_BasicInfo_pagelayout = QVBoxLayout()
@@ -98,6 +102,13 @@ class MainWindow(QMainWindow):
         # TODO 做一个专门展示进程信息的TabWidget
         pass
 
+    def process_ImageInfo(self):
+        self.start_process("ImageInfo")
+
+    def set_tab_ImageInfo(self, widget: QTableWidget):
+        widget.setRowCount(5)
+        widget.setColumnCount(5)
+
     def set_tab_BasicInfo(self, widget: QTabWidget):
         """
         设置BasicInfo标签页
@@ -108,9 +119,6 @@ class MainWindow(QMainWindow):
         widget.addTab(Tab_BasicInfo_child_pslist, "pslist")
         widget.addTab(Tab_BasicInfo_child_cmdline, "cmdline")
         widget.addTab(Tab_BasicInfo_child_iehistory, "iehistory")
-
-    def set_tab_ImageInfo(self, widget: QTabWidget):
-        pass
 
     def set_MenuBar(self):
         menu_bar = self.menuBar()
@@ -149,11 +157,10 @@ class MainWindow(QMainWindow):
         self.w.show()
 
     def print_res(self):
-        res = core_res.get_res()
-        res = res.split("\n")
-        res = [i for i in res if i != ""]
-        res = [i.replace(" ", "").split(":") for i in res]
-        print(res, sep="\n")
+        res = core_res.get_res("imageinfo")
+        print(res)
+        res=core_res.sort_res(res)
+        print(res)
 
     # 选取镜像文件
     def OpenFile(self):
@@ -162,7 +169,7 @@ class MainWindow(QMainWindow):
             config["imagefile"] = filename
             logging.info("select image file:" + filename)
 
-    def start_process(self, module: str):
+    def start_process(self, module: str, profile=None):
         if config["imagefile"] == "":
             logging.warning("未指定文件")
             dlg = QMessageBox(self)
@@ -171,16 +178,25 @@ class MainWindow(QMainWindow):
             dlg.exec()
             return 0
         if self.process_vol_v2 is None:  # No process running.
-            # FIXME 解决多线程同时执行的问题
             logging.info("Executing process")
-            self.process_vol_v2 = vol_backend_v2(self)
-            self.process_vol_v2.func(config["imagefile"], "pslist", self.process_finished)
-            self.process_vol_v2.func(config["imagefile"], "cmdline", self.process_finished)
-            self.process_vol_v2.func(config["imagefile"], "iehistory", self.process_finished)
+            if module == "ImageInfo":
+                self.Btn_ImageInfo_start.setDisabled(True)
+                self.Btn_ImageInfo_start.setText("分析中")
+                self.process_vol_v2 = vol_backend_v2(self)
+                self.process_vol_v2.func(config["imagefile"], "imageinfo", self.process_finished_ImageInfo)
+            if module == "BasicInfo":
+                # TODO 编写基础信息分析的回调函数
+                pass
 
-    def process_finished(self):
+    def process_finished_ImageInfo(self):
         logging.info("Process finished.")
-        self.p = None
+        self.process_vol_ImageInfo = None
+        self.Btn_ImageInfo_start.setEnabled(True)
+        self.Btn_ImageInfo_start.setText("开始分析")
+        res = core_res.get_res("imageinfo")
+        res = core_res.sort_res(res)
+        # TODO 完善数据呈现
+        pass
 
     def closeEvent(self, event):
         for window in QApplication.topLevelWidgets():

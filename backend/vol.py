@@ -9,7 +9,7 @@ class vol_backend_v2(QProcess):
         super().__init__(parent)
         self.process = None
 
-    def func(self, imagefile: str, module: str, func_finished):
+    def func(self, imagefile: str, module: str, func_finished, profile=None):
         """
         调用Volatility2进行镜像分析
         """
@@ -30,7 +30,7 @@ class vol_backend_v2(QProcess):
         data = self.process.readAllStandardOutput()
         stdout = bytes(data).decode()
         logging.info(stdout)
-        core_res.add_res(stdout)
+        core_res.add_res("imageinfo", stdout)
 
     def handle_state(self, state):
         states = {
@@ -40,6 +40,3 @@ class vol_backend_v2(QProcess):
         }
         state_name = states[state]
         logging.debug(f"State changed: {state_name}")
-
-    def process_finished(self):
-        logging.debug("Process finished")

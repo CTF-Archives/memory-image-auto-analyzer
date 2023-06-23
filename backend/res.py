@@ -1,13 +1,24 @@
 class result():
 
     def __init__(self) -> None:
-        self.res_imageinfo = ""
+        self.res_imageinfo = {}
 
-    def add_res(self, data):
-        self.res_imageinfo += data
+    def add_res(self, module: str, data: str):
+        # 储存扫描结果，module以vol模块格式
+        self.res_imageinfo[module] = data
 
-    def get_res(self):
-        return self.res_imageinfo
+    def get_res(self, module: str):
+        # 调用扫描结果，module以vol模块格式
+        if module in self.res_imageinfo.keys():
+            return self.res_imageinfo[module]
+        else:
+            return "Module is empty"
+
+    def sort_res(self, data: str):
+        data = data.split("\n")
+        data = [i for i in data if i != ""]
+        res = [i.strip().split(":", maxsplit=1) for i in data]
+        return res
 
 
 core_res = result()
