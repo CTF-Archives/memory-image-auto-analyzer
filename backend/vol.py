@@ -17,7 +17,7 @@ class vol_backend_v2(QProcess):
         self.process.readyReadStandardOutput.connect(self.handle_stdout)
         self.process.readyReadStandardError.connect(self.handle_stderr)
         self.process.stateChanged.connect(self.handle_state)
-        # self.process.finished.connect(self.process_finished)  # Clean up once complete.
+        # self.process.finished.connect(self.process_finished)
         self.process.finished.connect(func_finished)
         self.process.start("vol.py", ["-f", imagefile, module])
 

@@ -2,7 +2,7 @@ import sys
 import os
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import *
-from PySide6.QtGui import QAction, QPalette, QColor
+from PySide6.QtGui import QAction
 import qdarkstyle
 import logging
 from qtawesome import icon
@@ -43,6 +43,39 @@ class MainWindow(QMainWindow):
         # 设置结果输出界面
         self.setResultBlok()
 
+    def set_MenuBar(self):
+        menu_bar = self.menuBar()
+        menu_bar.setContextMenuPolicy(Qt.PreventContextMenu)  # 禁用右键菜单
+        menu_bar_size = menu_bar.font()
+        menu_bar_size.setPointSize(9)
+        menu_bar.setFont(menu_bar_size)
+
+        # 设置文件菜单栏
+        menu_file = menu_bar.addMenu(" {} ".format("文件"))
+        menu_file.setFont(menu_bar_size)
+        action_OpenNewFile = QAction(icon("fa5.file"), "打开内存镜像文件", self)
+        action_OpenNewFile.setStatusTip("打开内存镜像文件")
+        action_OpenNewFile.triggered.connect(self.OpenFile)
+        menu_file.addAction(action_OpenNewFile)
+        # 增加分隔符
+        menu_file.addSeparator()
+        action_ApplicationQuit = QAction(icon("fa5s.door-open"), "退出", self)
+        action_ApplicationQuit.setStatusTip("退出程序")
+        action_ApplicationQuit.triggered.connect(self.closeEvent)
+        menu_file.addAction(action_ApplicationQuit)
+
+        # 设置帮助菜单栏
+        menu_help = menu_bar.addMenu(" {} ".format("帮助"))
+        menu_help.setFont(menu_bar_size)
+        action_ShowLog = QAction(icon("ri.newspaper-line"), "显示日志窗口", self)
+        action_ShowLog.setStatusTip("显示程序日志")
+        action_ShowLog.triggered.connect(self.show_log)
+        menu_help.addAction(action_ShowLog)
+        action_ShowRes = QAction(icon("ri.newspaper-line"), "Debug 显示输出", self)
+        action_ShowRes.setStatusTip("打印最新一次输出")
+        action_ShowRes.triggered.connect(self.print_res)
+        menu_help.addAction(action_ShowRes)
+
     def setResultBlok(self):
         """
         设置结果输出页面
@@ -51,29 +84,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tabWidget)
 
         # 镜像文件信息页面
-        Tab_ImageInfo_pagelayout = QVBoxLayout()
-        Tab_ImageInfo_button_layout = QHBoxLayout()
-        Tab_ImageInfo_info_layout = QVBoxLayout()
-
-        Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_button_layout)
-        Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_info_layout)
-
-        self.Btn_ImageInfo_start = QPushButton("开始分析")
-
-        self.Btn_ImageInfo_start.pressed.connect(self.process_ImageInfo)
-        Tab_ImageInfo_button_layout.addWidget(self.Btn_ImageInfo_start)
-
-        Btn_ImageInfo_export = QPushButton("保存报告")
-        Tab_ImageInfo_button_layout.addWidget(Btn_ImageInfo_export)
-
-        # FIXME 镜像信息加上根据profile返回值更新的下拉框，以及展示界面
-        self.Tab_ImageInfo_res = QTableWidget()
-        Tab_ImageInfo_info_layout.addWidget(self.Tab_ImageInfo_res)
-
         self.Tab_ImageInfo = QWidget()
-        self.Tab_ImageInfo.setLayout(Tab_ImageInfo_pagelayout)
-        self.set_tab_ImageInfo(self.Tab_ImageInfo_res)
         self.tabWidget.addTab(self.Tab_ImageInfo, "镜像信息")
+        self.set_tab_ImageInfo()
 
         # 基础信息页面
         Tab_BasicInfo_pagelayout = QVBoxLayout()
@@ -105,9 +118,54 @@ class MainWindow(QMainWindow):
     def process_ImageInfo(self):
         self.start_process("ImageInfo")
 
-    def set_tab_ImageInfo(self, widget: QTableWidget):
-        widget.setRowCount(5)
-        widget.setColumnCount(5)
+    def set_tab_ImageInfo(self):
+        # 设置布局
+        Tab_ImageInfo_pagelayout = QVBoxLayout()
+        self.Tab_ImageInfo.setLayout(Tab_ImageInfo_pagelayout)
+        Tab_ImageInfo_control_layout = QHBoxLayout()
+        Tab_ImageInfo_info_layout = QVBoxLayout()
+        Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_control_layout)
+        Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_info_layout)
+
+        # 设置第一栏控制栏
+        # 开始分析的按钮
+        self.Btn_ImageInfo_start = QPushButton("开始分析")
+        self.Btn_ImageInfo_start.clicked.connect(self.process_ImageInfo)
+        Tab_ImageInfo_control_layout.addWidget(self.Btn_ImageInfo_start)
+        # 导出报告的按钮
+        self.Btn_ImageInfo_export = QPushButton("导出报告")
+        # TODO 增加导出报告的功能
+        Tab_ImageInfo_control_layout.addWidget(self.Btn_ImageInfo_export)
+        # 显示Profile的标签
+        self.Label_Imageinfo = QLabel("Profile:")
+        self.Label_Imageinfo.setFixedWidth(50)
+        Tab_ImageInfo_control_layout.addWidget(self.Label_Imageinfo)
+        # 选择Profile的下拉框
+        self.Combo_profile = QComboBox()
+        self.Combo_profile.addItem("还未分析")
+        Tab_ImageInfo_control_layout.addWidget(self.Combo_profile)
+
+        # 设置第二栏信息输出栏
+        self.Tab_ImageInfo_res = QTableWidget()
+        Tab_ImageInfo_info_layout.addWidget(self.Tab_ImageInfo_res)
+
+        # 设置表格输出形式
+        self.Tab_ImageInfo_res.setRowCount(5)
+        self.Tab_ImageInfo_res.setColumnCount(2)
+        horizontal_header_labels = ['Key', 'Value']
+        self.Tab_ImageInfo_res.setHorizontalHeaderLabels(horizontal_header_labels)
+        # 设置平滑滚动
+        self.Tab_ImageInfo_res.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_ImageInfo_res.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_ImageInfo_res.horizontalScrollBar().setSingleStep(10)
+        self.Tab_ImageInfo_res.verticalScrollBar().setSingleStep(10)
+        # 将 QTableWidget 设置为不可编辑
+        self.Tab_ImageInfo_res.setEditTriggers(QTableWidget.NoEditTriggers)
+        # 隐藏垂直方向表头
+        self.Tab_ImageInfo_res.verticalHeader().setVisible(False)
+        # 设置 Key 列的宽度为 100
+        self.Tab_ImageInfo_res.setColumnWidth(0, 250)
+        self.Tab_ImageInfo_res.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
     def set_tab_BasicInfo(self, widget: QTabWidget):
         """
@@ -120,46 +178,16 @@ class MainWindow(QMainWindow):
         widget.addTab(Tab_BasicInfo_child_cmdline, "cmdline")
         widget.addTab(Tab_BasicInfo_child_iehistory, "iehistory")
 
-    def set_MenuBar(self):
-        menu_bar = self.menuBar()
-        menu_bar.setContextMenuPolicy(Qt.PreventContextMenu)  # 禁用右键菜单
-        menu_bar_size = menu_bar.font()
-        menu_bar_size.setPointSize(9)
-        menu_bar.setFont(menu_bar_size)
-
-        # 设置文件菜单栏
-        menu_file = menu_bar.addMenu("文件")
-        menu_file.setFont(menu_bar_size)
-        action_OpenNewFile = QAction(icon("fa5.file"), "打开内存镜像文件", self)
-        action_OpenNewFile.setStatusTip("打开内存镜像文件")
-        action_OpenNewFile.triggered.connect(self.OpenFile)
-        menu_file.addAction(action_OpenNewFile)
-        # 增加分隔符
-        menu_file.addSeparator()
-        action_ApplicationQuit = QAction(icon("fa5s.door-open"), "退出", self)
-        action_ApplicationQuit.setStatusTip("退出程序")
-        action_ApplicationQuit.triggered.connect(self.closeEvent)
-        menu_file.addAction(action_ApplicationQuit)
-
-        # 设置帮助菜单栏
-        menu_help = menu_bar.addMenu("帮助")
-        menu_help.setFont(menu_bar_size)
-        action_ShowLog = QAction(icon("ri.newspaper-line"), "显示日志窗口", self)
-        action_ShowLog.setStatusTip("显示程序日志")
-        action_ShowLog.triggered.connect(self.show_log)
-        menu_help.addAction(action_ShowLog)
-        action_ShowRes = QAction(icon("ri.newspaper-line"), "Debug 显示输出", self)
-        action_ShowRes.setStatusTip("打印最新一次输出")
-        action_ShowRes.triggered.connect(self.print_res)
-        menu_help.addAction(action_ShowRes)
-
     def show_log(self):
         self.w.show()
 
     def print_res(self):
+        """
+        仅为测试用,用于测试数据输出
+        """
         res = core_res.get_res("imageinfo")
         print(res)
-        res=core_res.sort_res(res)
+        res = core_res.sort_res(res)
         print(res)
 
     # 选取镜像文件
@@ -180,23 +208,40 @@ class MainWindow(QMainWindow):
         if self.process_vol_v2 is None:  # No process running.
             logging.info("Executing process")
             if module == "ImageInfo":
-                self.Btn_ImageInfo_start.setDisabled(True)
+                self.Btn_ImageInfo_start.setEnabled(False)
+                self.Tab_ImageInfo_res.clearContents()
                 self.Btn_ImageInfo_start.setText("分析中")
                 self.process_vol_v2 = vol_backend_v2(self)
+                core_res.clear_res("imageinfo")
                 self.process_vol_v2.func(config["imagefile"], "imageinfo", self.process_finished_ImageInfo)
             if module == "BasicInfo":
-                # TODO 编写基础信息分析的回调函数
+                # TODO 编写基础信息分析的调用函数
                 pass
 
     def process_finished_ImageInfo(self):
         logging.info("Process finished.")
-        self.process_vol_ImageInfo = None
+        self.process_vol_v2 = None
         self.Btn_ImageInfo_start.setEnabled(True)
         self.Btn_ImageInfo_start.setText("开始分析")
         res = core_res.get_res("imageinfo")
         res = core_res.sort_res(res)
-        # TODO 完善数据呈现
-        pass
+        # 设置表格的行数和列数
+        self.Tab_ImageInfo_res.setRowCount(len(res))
+        self.Tab_ImageInfo_res.setColumnCount(len(res[0]))
+        # 遍历二维数组，将数据添加到表格中
+        for i, row in enumerate(res):
+            for j, item in enumerate(row):
+                # 创建 QTableWidgetItem 实例，并设置文本
+                table_item = QTableWidgetItem(item)
+                # 将 QTableWidgetItem 添加到表格的指定位置
+                self.Tab_ImageInfo_res.setItem(i, j, table_item)
+        # 设置 Name 列的文本居中对齐
+        name_column = 0
+        for row in range(self.Tab_ImageInfo_res.rowCount()):
+            self.Tab_ImageInfo_res.item(row, name_column).setTextAlignment(Qt.AlignCenter)
+        self.Combo_profile.clear()
+        for i in res[0][1].split(","):
+            self.Combo_profile.addItem(i.strip())
 
     def closeEvent(self, event):
         for window in QApplication.topLevelWidgets():

@@ -3,9 +3,18 @@ class result():
     def __init__(self) -> None:
         self.res_imageinfo = {}
 
+    def clear_res(self, module: str):
+        if module in self.res_imageinfo.keys():
+            self.res_imageinfo.pop(module)
+        else:
+            return "Module is empty"
+
     def add_res(self, module: str, data: str):
         # 储存扫描结果，module以vol模块格式
-        self.res_imageinfo[module] = data
+        if module not in self.res_imageinfo.keys():
+            self.res_imageinfo[module] = data
+        else:
+            self.res_imageinfo[module] += data
 
     def get_res(self, module: str):
         # 调用扫描结果，module以vol模块格式
