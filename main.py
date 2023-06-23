@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
 
     # 选取镜像文件
     def OpenFile(self):
-        filename = QFileDialog.getOpenFileName(parent=self, caption='Open file', dir='.', filter='*')[0]
+        filename = QFileDialog.getOpenFileName(parent=self, caption='选择镜像文件', dir='.', filter='*')[0]
         if filename:
             config["imagefile"] = filename
             logging.info("select image file:" + filename)

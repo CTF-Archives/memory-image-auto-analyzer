@@ -20,6 +20,8 @@ class LogWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle("日志输出")
+
         self.logTextBox = QTextEditLogger(self)
         self.logTextBox.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - module: %(module)s - funcName: %(funcName)s\n--> %(message)s\n'))
         logging.getLogger().addHandler(self.logTextBox)
