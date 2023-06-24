@@ -143,6 +143,7 @@ class MainWindow(QMainWindow):
         # 选择Profile的下拉框
         self.Combo_profile = QComboBox()
         self.Combo_profile.addItem("还未分析")
+        self.Combo_profile.currentTextChanged.connect(self.set_profile)
         Tab_ImageInfo_control_layout.addWidget(self.Combo_profile)
 
         # 设置第二栏信息输出栏
@@ -166,6 +167,11 @@ class MainWindow(QMainWindow):
         # 设置 Key 列的宽度为 100
         self.Tab_ImageInfo_res.setColumnWidth(0, 250)
         self.Tab_ImageInfo_res.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+
+    def set_profile(self):
+        config["profile"] = self.Combo_profile.currentText()
+        logging.info("select profile:" + self.Combo_profile.currentText())
+        logging.debug("current config:" + str(config))
 
     def set_tab_BasicInfo(self, widget: QTabWidget):
         """
@@ -211,12 +217,19 @@ class MainWindow(QMainWindow):
                 self.Btn_ImageInfo_start.setEnabled(False)
                 self.Tab_ImageInfo_res.clearContents()
                 self.Btn_ImageInfo_start.setText("分析中")
-                self.process_vol_v2 = vol_backend_v2(self)
+                self.process_vol_v2 = vol_backend_v2(config["imagefile"], "imageinfo", self.process_finished_ImageInfo)
                 core_res.clear_res("imageinfo")
-                self.process_vol_v2.func(config["imagefile"], "imageinfo", self.process_finished_ImageInfo)
+                self.process_vol_v2.run()
             if module == "BasicInfo":
                 # TODO 编写基础信息分析的调用函数
                 pass
+        else:
+            logging.warning("程序正忙")
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Warning!")
+            dlg.setText("当前存在其他模块正在运行!")
+            dlg.exec()
+            return 0
 
     def process_finished_ImageInfo(self):
         logging.info("Process finished.")
