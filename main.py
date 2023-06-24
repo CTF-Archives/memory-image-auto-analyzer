@@ -248,10 +248,10 @@ class MainWindow(QMainWindow):
                 table_item = QTableWidgetItem(item)
                 # 将 QTableWidgetItem 添加到表格的指定位置
                 self.Tab_ImageInfo_res.setItem(i, j, table_item)
-        # 设置 Name 列的文本居中对齐
-        name_column = 0
+        # 设置 Key 列的文本居中对齐
+        key_column = 0
         for row in range(self.Tab_ImageInfo_res.rowCount()):
-            self.Tab_ImageInfo_res.item(row, name_column).setTextAlignment(Qt.AlignCenter)
+            self.Tab_ImageInfo_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
         self.Combo_profile.clear()
         for i in res[0][1].split(","):
             self.Combo_profile.addItem(i.strip())
