@@ -16,11 +16,17 @@ config = {"imagefile": "", "profile": ""}
 
 res = ""
 
+DEBUG = True
+
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        if DEBUG == True:
+            config["profile"] = "Win7SP1x64"
+            config["imagefile"] = "/home/randark/Snapshot6.vmem"
 
         self.setWindowTitle("Memory image auto-analyzer")
         self.setMinimumSize(1000, 700)
@@ -96,12 +102,12 @@ class MainWindow(QMainWindow):
         Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_button_layout)
         Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_info_layout)
 
-        Btn_BasicInfo_start = QPushButton("开始分析")
-        Btn_BasicInfo_start.pressed.connect(self.start_process)
-        Tab_BasicInfo_button_layout.addWidget(Btn_BasicInfo_start)
+        self.Btn_BasicInfo_start = QPushButton("开始分析")
+        self.Btn_BasicInfo_start.pressed.connect(self.process_BasicInfo)
+        Tab_BasicInfo_button_layout.addWidget(self.Btn_BasicInfo_start)
 
-        Btn_BasicInfo_export = QPushButton("保存报告")
-        Tab_BasicInfo_button_layout.addWidget(Btn_BasicInfo_export)
+        self.Btn_BasicInfo_export = QPushButton("保存报告")
+        Tab_BasicInfo_button_layout.addWidget(self.Btn_BasicInfo_export)
 
         self.Tab_BasicInfo_child = QTabWidget()
         Tab_BasicInfo_info_layout.addWidget(self.Tab_BasicInfo_child)
@@ -168,6 +174,9 @@ class MainWindow(QMainWindow):
         self.Tab_ImageInfo_res.setColumnWidth(0, 250)
         self.Tab_ImageInfo_res.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
+    def process_BasicInfo(self):
+        self.start_process("BasicInfo")
+
     def set_profile(self):
         config["profile"] = self.Combo_profile.currentText()
         logging.info("select profile:" + self.Combo_profile.currentText())
@@ -191,9 +200,10 @@ class MainWindow(QMainWindow):
         """
         仅为测试用,用于测试数据输出
         """
-        res = core_res.get_res("imageinfo")
+        module = "pslist"
+        res = core_res.get_res(module)
         print(res)
-        res = core_res.sort_res(res)
+        res = core_res.sort_res(res, module)
         print(res)
 
     # 选取镜像文件
@@ -204,6 +214,9 @@ class MainWindow(QMainWindow):
             logging.info("select image file:" + filename)
 
     def start_process(self, module: str, profile=None):
+        """
+        开始启动分析线程，仅在这里使用集合化模块指令
+        """
         if config["imagefile"] == "":
             logging.warning("未指定文件")
             dlg = QMessageBox(self)
@@ -217,12 +230,25 @@ class MainWindow(QMainWindow):
                 self.Btn_ImageInfo_start.setEnabled(False)
                 self.Tab_ImageInfo_res.clearContents()
                 self.Btn_ImageInfo_start.setText("分析中")
-                self.process_vol_v2 = vol_backend_v2(config["imagefile"], "imageinfo", self.process_finished_ImageInfo)
+                self.process_vol_v2 = vol_backend_v2(config["imagefile"], "imageinfo", self.process_finished_imageinfo)
                 core_res.clear_res("imageinfo")
                 self.process_vol_v2.run()
-            if module == "BasicInfo":
-                # TODO 编写基础信息分析的调用函数
-                pass
+            elif config["imagefile"] != "":
+                if module == "BasicInfo":
+                    sub_modules = ["pslist", "cmdline", "iehistory"]
+                    for i in sub_modules:
+                        core_res.clear_res(i)
+                    # 设置状态变量，跟踪所有子线程是否都已经完成
+                    self.Status_BasicInfo = 0
+                    self.Btn_BasicInfo_start.setEnabled(False)
+                    self.Btn_BasicInfo_start.setText("分析中")
+                    self.process_vol_v2 = [
+                        vol_backend_v2(config["imagefile"], "pslist", self.process_finished_pslist, profile=config["profile"]),
+                        # vol_backend_v2(config["imagefile"], "cmdline", self.process_finished_cmdline, profile=config["profile"]),
+                        # vol_backend_v2(config["imagefile"], "iehistory", self.process_finished_iehistory, profile=config["profile"])
+                    ]
+                    for i in self.process_vol_v2:
+                        i.run()
         else:
             logging.warning("程序正忙")
             dlg = QMessageBox(self)
@@ -231,13 +257,16 @@ class MainWindow(QMainWindow):
             dlg.exec()
             return 0
 
-    def process_finished_ImageInfo(self):
+    def process_finished_imageinfo(self):
+        """
+        imageinfo模块执行完毕
+        """
         logging.info("Process finished.")
         self.process_vol_v2 = None
         self.Btn_ImageInfo_start.setEnabled(True)
         self.Btn_ImageInfo_start.setText("开始分析")
         res = core_res.get_res("imageinfo")
-        res = core_res.sort_res(res)
+        res = core_res.sort_res(res, "imageinfo")
         # 设置表格的行数和列数
         self.Tab_ImageInfo_res.setRowCount(len(res))
         self.Tab_ImageInfo_res.setColumnCount(len(res[0]))
@@ -256,7 +285,37 @@ class MainWindow(QMainWindow):
         for i in res[0][1].split(","):
             self.Combo_profile.addItem(i.strip())
 
+    def process_finished_pslist(self):
+        res = core_res.get_res("pslist")
+        print(res)
+        self.Status_BasicInfo += 1
+        if self.Status_BasicInfo == 3:
+            self.process_vol_v2 = None
+            self.Btn_BasicInfo_start.setEnabled(True)
+            self.Btn_BasicInfo_start.setText("开始分析")
+
+    def process_finished_cmdline(self):
+        res = core_res.get_res("cmdline")
+        print(res)
+        self.Status_BasicInfo += 1
+        if self.Status_BasicInfo == 3:
+            self.process_vol_v2 = None
+            self.Btn_BasicInfo_start.setEnabled(True)
+            self.Btn_BasicInfo_start.setText("开始分析")
+
+    def process_finished_iehistory(self):
+        res = core_res.get_res("iehistory")
+        print(res)
+        self.Status_BasicInfo += 1
+        if self.Status_BasicInfo == 3:
+            self.process_vol_v2 = None
+            self.Btn_BasicInfo_start.setEnabled(True)
+            self.Btn_BasicInfo_start.setText("开始分析")
+
     def closeEvent(self, event):
+        """
+        覆写程序关闭行为
+        """
         for window in QApplication.topLevelWidgets():
             window.close()
 

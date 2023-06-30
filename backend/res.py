@@ -23,10 +23,18 @@ class result():
         else:
             return "Module is empty"
 
-    def sort_res(self, data: str):
+    def sort_res(self, data: str, module: str):
         data = data.split("\n")
         data = [i for i in data if i != ""]
-        res = [i.strip().split(":", maxsplit=1) for i in data]
+        if module == "imageinfo":
+            res = [i.strip().split(":", maxsplit=1) for i in data]
+        elif module == "pslist":
+            res = data[2:]
+            res = [i.split(" ") for i in res]
+            for offset, sub in enumerate(res):
+                res[offset] = [i for i in sub if i != ""]
+        else:
+            res = [data]
         return res
 
 
