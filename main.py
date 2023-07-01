@@ -95,46 +95,25 @@ class MainWindow(QMainWindow):
         self.set_tab_ImageInfo()
 
         # 基础信息页面
-        Tab_BasicInfo_pagelayout = QVBoxLayout()
-        Tab_BasicInfo_button_layout = QHBoxLayout()
-        Tab_BasicInfo_info_layout = QVBoxLayout()
-
-        Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_button_layout)
-        Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_info_layout)
-
-        self.Btn_BasicInfo_start = QPushButton("开始分析")
-        self.Btn_BasicInfo_start.pressed.connect(self.process_BasicInfo)
-        Tab_BasicInfo_button_layout.addWidget(self.Btn_BasicInfo_start)
-
-        self.Btn_BasicInfo_export = QPushButton("保存报告")
-        Tab_BasicInfo_button_layout.addWidget(self.Btn_BasicInfo_export)
-
-        self.Tab_BasicInfo_child = QTabWidget()
-        Tab_BasicInfo_info_layout.addWidget(self.Tab_BasicInfo_child)
-
-        self.tab_result_raw = QWidget()
-        self.tab_result_raw.setLayout(Tab_BasicInfo_pagelayout)
-        self.set_tab_BasicInfo(self.Tab_BasicInfo_child)
-        self.tabWidget.addTab(self.tab_result_raw, "基础信息")
+        self.Tab_BasicInfo = QWidget()
+        self.tabWidget.addTab(self.Tab_BasicInfo, "基础信息")
+        self.set_tab_BasicInfo()
 
         # 进程信息页面
         # TODO 做一个专门展示进程信息的TabWidget
-        pass
 
     def process_ImageInfo(self):
         self.start_process("ImageInfo")
 
     def set_tab_ImageInfo(self):
-        # 设置布局
+        # 设置主布局
         Tab_ImageInfo_pagelayout = QVBoxLayout()
         self.Tab_ImageInfo.setLayout(Tab_ImageInfo_pagelayout)
         Tab_ImageInfo_control_layout = QHBoxLayout()
         Tab_ImageInfo_info_layout = QVBoxLayout()
         Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_control_layout)
         Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_info_layout)
-
-        # 设置第一栏控制栏
-        # 开始分析的按钮
+        # 设置第一栏控制栏, 开始分析的按钮
         self.Btn_ImageInfo_start = QPushButton("开始分析")
         self.Btn_ImageInfo_start.clicked.connect(self.process_ImageInfo)
         Tab_ImageInfo_control_layout.addWidget(self.Btn_ImageInfo_start)
@@ -158,8 +137,8 @@ class MainWindow(QMainWindow):
 
         # 设置表格输出形式
         self.Tab_ImageInfo_res.setRowCount(5)
-        self.Tab_ImageInfo_res.setColumnCount(2)
         horizontal_header_labels = ['Key', 'Value']
+        self.Tab_ImageInfo_res.setColumnCount(len(horizontal_header_labels))
         self.Tab_ImageInfo_res.setHorizontalHeaderLabels(horizontal_header_labels)
         # 设置平滑滚动
         self.Tab_ImageInfo_res.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
@@ -182,16 +161,65 @@ class MainWindow(QMainWindow):
         logging.info("select profile:" + self.Combo_profile.currentText())
         logging.debug("current config:" + str(config))
 
-    def set_tab_BasicInfo(self, widget: QTabWidget):
+    def set_tab_BasicInfo(self):
         """
         设置BasicInfo标签页
         """
-        Tab_BasicInfo_child_pslist = QWidget()
-        Tab_BasicInfo_child_cmdline = QWidget()
-        Tab_BasicInfo_child_iehistory = QWidget()
-        widget.addTab(Tab_BasicInfo_child_pslist, "pslist")
-        widget.addTab(Tab_BasicInfo_child_cmdline, "cmdline")
-        widget.addTab(Tab_BasicInfo_child_iehistory, "iehistory")
+        # 设置主布局
+        Tab_BasicInfo_pagelayout = QVBoxLayout()
+        self.Tab_BasicInfo.setLayout(Tab_BasicInfo_pagelayout)
+        Tab_BasicInfo_button_layout = QHBoxLayout()
+        Tab_BasicInfo_info_layout = QVBoxLayout()
+        Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_button_layout)
+        Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_info_layout)
+
+        # 设置子窗口
+        self.Tab_BasicInfo_result = QTabWidget()
+        Tab_BasicInfo_info_layout.addWidget(self.Tab_BasicInfo_result)
+        Tab_BasicInfo_subtab_pslist = QWidget()
+        Tab_BasicInfo_subtab_cmdline = QWidget()
+        Tab_BasicInfo_subtab_iehistory = QWidget()
+        self.Tab_BasicInfo_result.addTab(Tab_BasicInfo_subtab_pslist, "pslist")
+        self.Tab_BasicInfo_result.addTab(Tab_BasicInfo_subtab_cmdline, "cmdline")
+        self.Tab_BasicInfo_result.addTab(Tab_BasicInfo_subtab_iehistory, "iehistory")
+        # 设置第一栏控制栏, 开始分析的按钮
+        self.Btn_BasicInfo_start = QPushButton("开始分析")
+        self.Btn_BasicInfo_start.pressed.connect(self.process_BasicInfo)
+        Tab_BasicInfo_button_layout.addWidget(self.Btn_BasicInfo_start)
+        # 导出报告的按钮
+        self.Btn_BasicInfo_export = QPushButton("保存报告")
+        Tab_BasicInfo_button_layout.addWidget(self.Btn_BasicInfo_export)
+        # 设置pslist模块的页面
+        self.set_tab_BasicInfo_pslist(Tab_BasicInfo_subtab_pslist)
+
+    def set_tab_BasicInfo_pslist(self,subtab:QWidget):
+        Tab_BasicInfo_pslist_pagelayout = QVBoxLayout()
+        subtab.setLayout(Tab_BasicInfo_pslist_pagelayout)
+        Tab_BasicInfo_pslist_control_layout = QHBoxLayout()
+        Tab_BasicInfo_pslist_info_layout = QVBoxLayout()
+        Tab_BasicInfo_pslist_pagelayout.addLayout(Tab_BasicInfo_pslist_control_layout)
+        Tab_BasicInfo_pslist_pagelayout.addLayout(Tab_BasicInfo_pslist_info_layout)
+        # 设置信息输出栏
+        self.Tab_BasicInfo_pslist_res = QTableWidget()
+        Tab_BasicInfo_pslist_info_layout.addWidget(self.Tab_BasicInfo_pslist_res)
+        # 设置表格输出形式
+        self.Tab_BasicInfo_pslist_res.setRowCount(5)
+        horizontal_header_labels = ["Offset(V)", "Name","PID","PPID","Thds","Hnds","Sess","Wow64","Start"]
+        self.Tab_BasicInfo_pslist_res.setColumnCount(len(horizontal_header_labels))
+        self.Tab_BasicInfo_pslist_res.setHorizontalHeaderLabels(horizontal_header_labels)
+        # 设置平滑滚动
+        self.Tab_BasicInfo_pslist_res.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_BasicInfo_pslist_res.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_BasicInfo_pslist_res.horizontalScrollBar().setSingleStep(10)
+        self.Tab_BasicInfo_pslist_res.verticalScrollBar().setSingleStep(10)
+        # 将 QTableWidget 设置为不可编辑
+        self.Tab_BasicInfo_pslist_res.setEditTriggers(QTableWidget.NoEditTriggers)
+        # 隐藏垂直方向表头
+        self.Tab_BasicInfo_pslist_res.verticalHeader().setVisible(False)
+        # 设置列的宽度
+        self.Tab_BasicInfo_pslist_res.setColumnWidth(0, 150)
+        self.Tab_BasicInfo_pslist_res.setColumnWidth(1, 150)
+        self.Tab_BasicInfo_pslist_res.setColumnWidth(8, 250)
 
     def show_log(self):
         self.w.show()
@@ -286,8 +314,28 @@ class MainWindow(QMainWindow):
             self.Combo_profile.addItem(i.strip())
 
     def process_finished_pslist(self):
+        logging.info("Process finished.")
         res = core_res.get_res("pslist")
-        print(res)
+        res = core_res.sort_res(res, "pslist")
+
+        # 设置表格的行数和列数
+        self.Tab_BasicInfo_pslist_res.setRowCount(len(res))
+        self.Tab_BasicInfo_pslist_res.setColumnCount(len(res[0]))
+        # 遍历二维数组，将数据添加到表格中
+        for i, row in enumerate(res):
+            for j, item in enumerate(row):
+                # 创建 QTableWidgetItem 实例，并设置文本
+                table_item = QTableWidgetItem(item)
+                # 将 QTableWidgetItem 添加到表格的指定位置
+                self.Tab_BasicInfo_pslist_res.setItem(i, j, table_item)
+        # 设置 Key 列的文本居中对齐
+        key_column = 0
+        for row in range(self.Tab_BasicInfo_pslist_res.rowCount()):
+            self.Tab_BasicInfo_pslist_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
+        self.Combo_profile.clear()
+        for i in res[0][1].split(","):
+            self.Combo_profile.addItem(i.strip())
+
         self.Status_BasicInfo += 1
         if self.Status_BasicInfo == 3:
             self.process_vol_v2 = None
@@ -296,7 +344,6 @@ class MainWindow(QMainWindow):
 
     def process_finished_cmdline(self):
         res = core_res.get_res("cmdline")
-        print(res)
         self.Status_BasicInfo += 1
         if self.Status_BasicInfo == 3:
             self.process_vol_v2 = None
@@ -305,7 +352,6 @@ class MainWindow(QMainWindow):
 
     def process_finished_iehistory(self):
         res = core_res.get_res("iehistory")
-        print(res)
         self.Status_BasicInfo += 1
         if self.Status_BasicInfo == 3:
             self.process_vol_v2 = None

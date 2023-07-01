@@ -32,7 +32,8 @@ class result():
             res = data[2:]
             res = [i.split(" ") for i in res]
             for offset, sub in enumerate(res):
-                res[offset] = [i for i in sub if i != ""]
+                tmp = [i for i in sub if i != ""]
+                res[offset] = tmp[0:8]+[" ".join(tmp[8:])]
         else:
             res = [data]
         return res
