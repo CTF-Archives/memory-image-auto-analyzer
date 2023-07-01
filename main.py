@@ -18,6 +18,8 @@ res = ""
 
 DEBUG = True
 
+dark_mode = False
+
 
 class MainWindow(QMainWindow):
 
@@ -25,11 +27,12 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         if DEBUG == True:
+            # 仅用于开发时测试
             config["profile"] = "Win7SP1x64"
             config["imagefile"] = "/home/randark/Snapshot6.vmem"
 
         self.setWindowTitle("Memory image auto-analyzer")
-        self.setMinimumSize(1000, 700)
+        self.setMinimumSize(1200, 700)
 
         # 设置项储存
         # self.settings = QSettings()
@@ -191,8 +194,12 @@ class MainWindow(QMainWindow):
         Tab_BasicInfo_button_layout.addWidget(self.Btn_BasicInfo_export)
         # 设置pslist模块的页面
         self.set_tab_BasicInfo_pslist(Tab_BasicInfo_subtab_pslist)
+        # 设置cmdline模块的页面
+        self.set_tab_BasicInfo_cmdline(Tab_BasicInfo_subtab_cmdline)
+        # 设置iehistory模块的页面
+        self.set_tab_BasicInfo_iehistory(Tab_BasicInfo_subtab_iehistory)
 
-    def set_tab_BasicInfo_pslist(self,subtab:QWidget):
+    def set_tab_BasicInfo_pslist(self, subtab: QWidget):
         Tab_BasicInfo_pslist_pagelayout = QVBoxLayout()
         subtab.setLayout(Tab_BasicInfo_pslist_pagelayout)
         Tab_BasicInfo_pslist_control_layout = QHBoxLayout()
@@ -204,7 +211,7 @@ class MainWindow(QMainWindow):
         Tab_BasicInfo_pslist_info_layout.addWidget(self.Tab_BasicInfo_pslist_res)
         # 设置表格输出形式
         self.Tab_BasicInfo_pslist_res.setRowCount(5)
-        horizontal_header_labels = ["Offset(V)", "Name","PID","PPID","Thds","Hnds","Sess","Wow64","Start"]
+        horizontal_header_labels = ["Offset(V)", "Name", "PID", "PPID", "Thds", "Hnds", "Sess", "Wow64", "Start"]
         self.Tab_BasicInfo_pslist_res.setColumnCount(len(horizontal_header_labels))
         self.Tab_BasicInfo_pslist_res.setHorizontalHeaderLabels(horizontal_header_labels)
         # 设置平滑滚动
@@ -221,6 +228,12 @@ class MainWindow(QMainWindow):
         self.Tab_BasicInfo_pslist_res.setColumnWidth(1, 150)
         self.Tab_BasicInfo_pslist_res.setColumnWidth(8, 250)
 
+    def set_tab_BasicInfo_cmdline(self, subtab: QWidget):
+        pass
+
+    def set_tab_BasicInfo_iehistory(self, subtab: QWidget):
+        pass
+
     def show_log(self):
         self.w.show()
 
@@ -228,7 +241,7 @@ class MainWindow(QMainWindow):
         """
         仅为测试用,用于测试数据输出
         """
-        module = "pslist"
+        module = "cmdline"
         res = core_res.get_res(module)
         print(res)
         res = core_res.sort_res(res, module)
@@ -272,7 +285,7 @@ class MainWindow(QMainWindow):
                     self.Btn_BasicInfo_start.setText("分析中")
                     self.process_vol_v2 = [
                         vol_backend_v2(config["imagefile"], "pslist", self.process_finished_pslist, profile=config["profile"]),
-                        # vol_backend_v2(config["imagefile"], "cmdline", self.process_finished_cmdline, profile=config["profile"]),
+                        vol_backend_v2(config["imagefile"], "cmdline", self.process_finished_cmdline, profile=config["profile"]),
                         # vol_backend_v2(config["imagefile"], "iehistory", self.process_finished_iehistory, profile=config["profile"])
                     ]
                     for i in self.process_vol_v2:
@@ -332,9 +345,6 @@ class MainWindow(QMainWindow):
         key_column = 0
         for row in range(self.Tab_BasicInfo_pslist_res.rowCount()):
             self.Tab_BasicInfo_pslist_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
-        self.Combo_profile.clear()
-        for i in res[0][1].split(","):
-            self.Combo_profile.addItem(i.strip())
 
         self.Status_BasicInfo += 1
         if self.Status_BasicInfo == 3:
@@ -344,6 +354,7 @@ class MainWindow(QMainWindow):
 
     def process_finished_cmdline(self):
         res = core_res.get_res("cmdline")
+        res = core_res.sort_res(res, "cmdline")
         self.Status_BasicInfo += 1
         if self.Status_BasicInfo == 3:
             self.process_vol_v2 = None
@@ -352,6 +363,8 @@ class MainWindow(QMainWindow):
 
     def process_finished_iehistory(self):
         res = core_res.get_res("iehistory")
+        if res == core_res.res_empty:
+            print("Empty!")
         self.Status_BasicInfo += 1
         if self.Status_BasicInfo == 3:
             self.process_vol_v2 = None
@@ -368,7 +381,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    dark_mode = False
     if dark_mode:
         app.setStyleSheet(qdarkstyle.load_stylesheet())
     window = MainWindow()

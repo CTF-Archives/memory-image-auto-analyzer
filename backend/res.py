@@ -1,6 +1,7 @@
 class result():
 
     def __init__(self) -> None:
+        self.res_empty = "Module is empty"
         self.res_imageinfo = {}
 
     def clear_res(self, module: str):
@@ -21,7 +22,7 @@ class result():
         if module in self.res_imageinfo.keys():
             return self.res_imageinfo[module]
         else:
-            return "Module is empty"
+            return self.res_empty
 
     def sort_res(self, data: str, module: str):
         data = data.split("\n")
@@ -33,7 +34,9 @@ class result():
             res = [i.split(" ") for i in res]
             for offset, sub in enumerate(res):
                 tmp = [i for i in sub if i != ""]
-                res[offset] = tmp[0:8]+[" ".join(tmp[8:])]
+                res[offset] = tmp[0:8] + [" ".join(tmp[8:])]
+        elif module == "cmdline":
+            res = [i for i in data if i != "*" * 72]
         else:
             res = [data]
         return res
