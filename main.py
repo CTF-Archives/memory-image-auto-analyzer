@@ -244,7 +244,7 @@ class MainWindow(QMainWindow):
         module = "cmdline"
         res = core_res.get_res(module)
         print(res)
-        res = core_res.sort_res(res, module)
+        res = core_res.format_res(res, module)
         print(res)
 
     # 选取镜像文件
@@ -307,7 +307,7 @@ class MainWindow(QMainWindow):
         self.Btn_ImageInfo_start.setEnabled(True)
         self.Btn_ImageInfo_start.setText("开始分析")
         res = core_res.get_res("imageinfo")
-        res = core_res.sort_res(res, "imageinfo")
+        res = core_res.format_res(res, "imageinfo")
         # 设置表格的行数和列数
         self.Tab_ImageInfo_res.setRowCount(len(res))
         self.Tab_ImageInfo_res.setColumnCount(len(res[0]))
@@ -329,7 +329,7 @@ class MainWindow(QMainWindow):
     def process_finished_pslist(self):
         logging.info("Process finished.")
         res = core_res.get_res("pslist")
-        res = core_res.sort_res(res, "pslist")
+        res = core_res.format_res(res, "pslist")
 
         # 设置表格的行数和列数
         self.Tab_BasicInfo_pslist_res.setRowCount(len(res))
@@ -354,7 +354,7 @@ class MainWindow(QMainWindow):
 
     def process_finished_cmdline(self):
         res = core_res.get_res("cmdline")
-        res = core_res.sort_res(res, "cmdline")
+        res = core_res.format_res(res, "cmdline")
         self.Status_BasicInfo += 1
         if self.Status_BasicInfo == 3:
             self.process_vol_v2 = None

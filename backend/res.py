@@ -4,27 +4,39 @@ class result():
         self.res_empty = "Module is empty"
         self.res_imageinfo = {}
 
-    def clear_res(self, module: str):
+    def clear_res(self, module: str) -> None:
+        """
+        对指定模块的储存进行清空
+        """
         if module in self.res_imageinfo.keys():
             self.res_imageinfo.pop(module)
         else:
             return "Module is empty"
 
-    def add_res(self, module: str, data: str):
+    def add_res(self, module: str, data: str) -> None:
+        """
+        将结果储存到指定模块
+        """
         # 储存扫描结果，module以vol模块格式
         if module not in self.res_imageinfo.keys():
             self.res_imageinfo[module] = data
         else:
             self.res_imageinfo[module] += data
 
-    def get_res(self, module: str):
+    def get_res(self, module: str) -> str:
+        """
+        读取特定模块的结果
+        """
         # 调用扫描结果，module以vol模块格式
         if module in self.res_imageinfo.keys():
             return self.res_imageinfo[module]
         else:
             return self.res_empty
 
-    def sort_res(self, data: str, module: str):
+    def format_res(self, data: str, module: str) -> str:
+        """
+        针对特定模块的数据进行格式化处理
+        """
         data = data.split("\n")
         data = [i for i in data if i != ""]
         if module == "imageinfo":
