@@ -1,63 +1,28 @@
 import sys
-from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot,Signal,QObject
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit
-from time import sleep
+from PySide6.QtWidgets import QApplication, QTreeView, QFileSystemModel, QVBoxLayout,QWidget
+from PySide6.QtCore import QDir
 
-class CommandTask(QRunnable):
-    def __init__(self, command):
-        super().__init__()
-        self.command = command
+# 创建应用程序对象
+app = QApplication(sys.argv)
 
-    @Slot()
-    def run(self):
-        # 执行需要在后台线程中完成的任务
-        print("Task started")
-        import subprocess
-        result = subprocess.run(self.command, capture_output=True, text=True)
-        output = result.stdout.strip()
-        # sleep(3)
-        print(f"Command: {self.command}, Output: {output}")
-        self.signal.finished.emit(output)
+# 创建树状视图和布局
+tree_view = QTreeView()
+layout = QVBoxLayout()
+layout.addWidget(tree_view)
 
-class MainWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
+# 创建文件系统模型
+model = QFileSystemModel()
+model.setRootPath(QDir.currentPath())
 
-    def initUI(self):
-        self.setWindowTitle("Thread Example")
-        self.layout = QVBoxLayout()
-        self.button = QPushButton("Start Threads")
-        self.button.clicked.connect(self.startThreads)
-        self.layout.addWidget(self.button)
-        self.console = QTextEdit(self)
-        self.console.setReadOnly(True)
-        self.layout.addWidget(self.console)
-        self.setLayout(self.layout)
+# 设置模型为树状结构
+tree_view.setModel(model)
+tree_view.setRootIndex(model.index(QDir.currentPath()))
 
-    def startThreads(self):
-        threadpool = QThreadPool()
-        threadpool.setMaxThreadCount(3)  # 设置最大线程数为 3
+# 显示树状视图窗口
+window = QWidget()
+window.setLayout(layout)
+window.setWindowTitle("Tree View Demo")
+window.show()
 
-        self.button.setEnabled(False)
-        self.console.clear()
-
-        commands = ["date --help","whoami --help"]
-        for command in commands:
-            task = CommandTask(command.split(" "))
-            task.signal = TaskSignal()
-            task.signal.finished.connect(self.outputResult)
-            threadpool.start(task)
-
-    @Slot(str)
-    def outputResult(self, result):
-        self.console.append(result)
-
-class TaskSignal(QObject):
-    finished = Signal(str)
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
+# 启动应用程序主循环
+sys.exit(app.exec())
