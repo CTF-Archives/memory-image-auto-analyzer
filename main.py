@@ -17,7 +17,7 @@ config = {"imagefile": "", "profile": ""}
 
 res = ""
 
-DEBUG = True
+DEBUG = False
 
 dark_mode = False
 
