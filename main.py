@@ -1,12 +1,13 @@
 import sys
 import os
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QRegularExpression, QSortFilterProxyModel
 from PySide6.QtWidgets import *
 from PySide6.QtGui import QAction
 import qdarkstyle
 import logging
 from qtawesome import icon
 from layout.window_log import LogWindow
+from layout.module_TableModel import TableModel
 from backend.vol import vol_backend_v2
 from backend.res import core_res
 
@@ -29,7 +30,7 @@ class MainWindow(QMainWindow):
         if DEBUG == True:
             # 仅用于开发时测试
             config["profile"] = "Win7SP1x64"
-            config["imagefile"] = "/home/randark/Snapshot6.vmem"
+            config["imagefile"] = "/home/randark/Snapshot19.vmem"
 
         self.setWindowTitle("Memory image auto-analyzer")
         self.setMinimumSize(1200, 700)
@@ -45,9 +46,9 @@ class MainWindow(QMainWindow):
 
         # 设置变量
         self.process_vol_v2 = None
-        self.w = LogWindow()
-        self.w.show()
-        self.w.hide()
+        self.LogWindow = LogWindow()
+        self.LogWindow.show()
+        self.LogWindow.hide()
 
         # 设置结果输出界面
         self.setResultBlok()
@@ -108,6 +109,14 @@ class MainWindow(QMainWindow):
     def process_ImageInfo(self):
         self.start_process("ImageInfo")
 
+    def process_BasicInfo(self):
+        self.start_process("BasicInfo")
+
+    def set_profile(self):
+        config["profile"] = self.Combo_profile.currentText()
+        logging.info("select profile:" + self.Combo_profile.currentText())
+        logging.debug("current config:" + str(config))
+
     def set_tab_ImageInfo(self):
         # 设置主布局
         Tab_ImageInfo_pagelayout = QVBoxLayout()
@@ -156,14 +165,6 @@ class MainWindow(QMainWindow):
         self.Tab_ImageInfo_res.setColumnWidth(0, 250)
         self.Tab_ImageInfo_res.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
-    def process_BasicInfo(self):
-        self.start_process("BasicInfo")
-
-    def set_profile(self):
-        config["profile"] = self.Combo_profile.currentText()
-        logging.info("select profile:" + self.Combo_profile.currentText())
-        logging.debug("current config:" + str(config))
-
     def set_tab_BasicInfo(self):
         """
         设置BasicInfo标签页
@@ -175,14 +176,15 @@ class MainWindow(QMainWindow):
         Tab_BasicInfo_info_layout = QVBoxLayout()
         Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_button_layout)
         Tab_BasicInfo_pagelayout.addLayout(Tab_BasicInfo_info_layout)
-
-        # 设置子窗口
         self.Tab_BasicInfo_result = QTabWidget()
         Tab_BasicInfo_info_layout.addWidget(self.Tab_BasicInfo_result)
+        # 设置子窗口布局
         Tab_BasicInfo_subtab_pslist = QWidget()
+        Tab_BasicInfo_subtab_filescan = QWidget()
         Tab_BasicInfo_subtab_cmdline = QWidget()
         Tab_BasicInfo_subtab_iehistory = QWidget()
         self.Tab_BasicInfo_result.addTab(Tab_BasicInfo_subtab_pslist, "pslist")
+        self.Tab_BasicInfo_result.addTab(Tab_BasicInfo_subtab_filescan, "filescan")
         self.Tab_BasicInfo_result.addTab(Tab_BasicInfo_subtab_cmdline, "cmdline")
         self.Tab_BasicInfo_result.addTab(Tab_BasicInfo_subtab_iehistory, "iehistory")
         # 设置第一栏控制栏, 开始分析的按钮
@@ -198,6 +200,8 @@ class MainWindow(QMainWindow):
         self.set_tab_BasicInfo_cmdline(Tab_BasicInfo_subtab_cmdline)
         # 设置iehistory模块的页面
         self.set_tab_BasicInfo_iehistory(Tab_BasicInfo_subtab_iehistory)
+        # 设置filescan模块的页面
+        self.set_tab_BasicInfo_filescan(Tab_BasicInfo_subtab_filescan)
 
     def set_tab_BasicInfo_pslist(self, subtab: QWidget):
         Tab_BasicInfo_pslist_pagelayout = QVBoxLayout()
@@ -228,20 +232,120 @@ class MainWindow(QMainWindow):
         self.Tab_BasicInfo_pslist_res.setColumnWidth(1, 150)
         self.Tab_BasicInfo_pslist_res.setColumnWidth(8, 250)
 
+    def set_tab_BasicInfo_filescan(self, subtab: QWidget):
+        Tab_BasicInfo_filescan_pagelayout = QVBoxLayout()
+        subtab.setLayout(Tab_BasicInfo_filescan_pagelayout)
+        Tab_BasicInfo_filescan_control_layout = QHBoxLayout()
+        Tab_BasicInfo_filescan_info_layout = QVBoxLayout()
+        Tab_BasicInfo_filescan_pagelayout.addLayout(Tab_BasicInfo_filescan_control_layout)
+        Tab_BasicInfo_filescan_pagelayout.addLayout(Tab_BasicInfo_filescan_info_layout)
+        # 设置搜索栏
+        self.Tab_BasicInfo_filescan_searchbar = QLineEdit()
+        self.Tab_BasicInfo_filescan_searchbar.textChanged.connect(self.set_tab_BasicInfo_filescan_filter_data)
+        Tab_BasicInfo_filescan_control_layout.addWidget(self.Tab_BasicInfo_filescan_searchbar)
+        # 设置信息输出栏
+        self.Tab_BasicInfo_filescan_res = QTableView()
+        Tab_BasicInfo_filescan_info_layout.addWidget(self.Tab_BasicInfo_filescan_res)
+        # 设置表格表头和筛选器
+        # 将模型定义部分抽出为独立函数
+        self.Tab_BasicInfo_filescan_res_header = ["Offset(P)", "File Path", "#Ptr", "#Hnd", "Access"]
+        Tab_BasicInfo_filescan_res_model = TableModel([["", "", "", "", ""]], self.Tab_BasicInfo_filescan_res_header)
+        self.Tab_BasicInfo_filescan_res_ProxyModel = QSortFilterProxyModel()
+        self.Tab_BasicInfo_filescan_res_ProxyModel.setFilterKeyColumn(-1)
+        self.Tab_BasicInfo_filescan_res_ProxyModel.setSourceModel(Tab_BasicInfo_filescan_res_model)
+        self.Tab_BasicInfo_filescan_res_ProxyModel.sort(0, Qt.AscendingOrder)
+        self.Tab_BasicInfo_filescan_res.setModel(self.Tab_BasicInfo_filescan_res_ProxyModel)
+        # 设置平滑滚动
+        self.Tab_BasicInfo_filescan_res.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_BasicInfo_filescan_res.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_BasicInfo_filescan_res.horizontalScrollBar().setSingleStep(10)
+        self.Tab_BasicInfo_filescan_res.verticalScrollBar().setSingleStep(10)
+        # 将 QTableWidget 设置为不可编辑
+        self.Tab_BasicInfo_filescan_res.setEditTriggers(QTableWidget.NoEditTriggers)
+        # 隐藏垂直方向表头
+        self.Tab_BasicInfo_filescan_res.verticalHeader().setVisible(False)
+        # 设置列的宽度
+        self.Tab_BasicInfo_filescan_res.setColumnWidth(0, 150)
+        self.Tab_BasicInfo_filescan_res.setColumnWidth(1, 800)
+
+    def set_tab_BasicInfo_filescan_filter_data(self, text):
+        regex = QRegularExpression(text)
+        self.Tab_BasicInfo_filescan_res_ProxyModel.setFilterRegularExpression(regex)
+        self.Tab_BasicInfo_filescan_res_ProxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
+
+    def set_tab_BasicInfo_filescan_setup_table_header(self):
+        header = self.Tab_BasicInfo_filescan_res.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
+        header.setStretchLastSection(True)
+
     def set_tab_BasicInfo_cmdline(self, subtab: QWidget):
-        pass
+        Tab_BasicInfo_cmdline_pagelayout = QVBoxLayout()
+        subtab.setLayout(Tab_BasicInfo_cmdline_pagelayout)
+        Tab_BasicInfo_cmdline_control_layout = QHBoxLayout()
+        Tab_BasicInfo_cmdline_info_layout = QVBoxLayout()
+        Tab_BasicInfo_cmdline_pagelayout.addLayout(Tab_BasicInfo_cmdline_control_layout)
+        Tab_BasicInfo_cmdline_pagelayout.addLayout(Tab_BasicInfo_cmdline_info_layout)
+        # 设置信息输出栏
+        self.Tab_BasicInfo_cmdline_res = QTableWidget()
+        Tab_BasicInfo_cmdline_info_layout.addWidget(self.Tab_BasicInfo_cmdline_res)
+        # 设置表格输出形式
+        self.Tab_BasicInfo_cmdline_res.setRowCount(5)
+        horizontal_header_labels = ["Name", "PID", "Command"]
+        self.Tab_BasicInfo_cmdline_res.setColumnCount(len(horizontal_header_labels))
+        self.Tab_BasicInfo_cmdline_res.setHorizontalHeaderLabels(horizontal_header_labels)
+        # 设置平滑滚动
+        self.Tab_BasicInfo_cmdline_res.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_BasicInfo_cmdline_res.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_BasicInfo_cmdline_res.horizontalScrollBar().setSingleStep(10)
+        self.Tab_BasicInfo_cmdline_res.verticalScrollBar().setSingleStep(10)
+        # 将 QTableWidget 设置为不可编辑
+        self.Tab_BasicInfo_cmdline_res.setEditTriggers(QTableWidget.NoEditTriggers)
+        # 隐藏垂直方向表头
+        self.Tab_BasicInfo_cmdline_res.verticalHeader().setVisible(False)
+        # 设置列的宽度
+        self.Tab_BasicInfo_cmdline_res.setColumnWidth(0, 100)
+        self.Tab_BasicInfo_cmdline_res.setColumnWidth(1, 70)
+        self.Tab_BasicInfo_cmdline_res.setColumnWidth(2, 1000)
 
     def set_tab_BasicInfo_iehistory(self, subtab: QWidget):
-        pass
+        Tab_BasicInfo_iehistory_pagelayout = QVBoxLayout()
+        subtab.setLayout(Tab_BasicInfo_iehistory_pagelayout)
+        Tab_BasicInfo_iehistory_control_layout = QHBoxLayout()
+        Tab_BasicInfo_iehistory_info_layout = QVBoxLayout()
+        Tab_BasicInfo_iehistory_pagelayout.addLayout(Tab_BasicInfo_iehistory_control_layout)
+        Tab_BasicInfo_iehistory_pagelayout.addLayout(Tab_BasicInfo_iehistory_info_layout)
+        # 设置信息输出栏
+        self.Tab_BasicInfo_iehistory_res = QTableWidget()
+        Tab_BasicInfo_iehistory_info_layout.addWidget(self.Tab_BasicInfo_iehistory_res)
+        # 设置表格输出形式
+        self.Tab_BasicInfo_iehistory_res.setRowCount(5)
+        horizontal_header_labels = ["name", "pid", "user", "filepath", "modified time", "accessed time", "File Offset", "Data Offset", "Data Length"]
+        self.Tab_BasicInfo_iehistory_res.setColumnCount(len(horizontal_header_labels))
+        self.Tab_BasicInfo_iehistory_res.setHorizontalHeaderLabels(horizontal_header_labels)
+        # 设置平滑滚动
+        self.Tab_BasicInfo_iehistory_res.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_BasicInfo_iehistory_res.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.Tab_BasicInfo_iehistory_res.horizontalScrollBar().setSingleStep(10)
+        self.Tab_BasicInfo_iehistory_res.verticalScrollBar().setSingleStep(10)
+        # 将 QTableWidget 设置为不可编辑
+        self.Tab_BasicInfo_iehistory_res.setEditTriggers(QTableWidget.NoEditTriggers)
+        # 隐藏垂直方向表头
+        self.Tab_BasicInfo_iehistory_res.verticalHeader().setVisible(False)
+        # 设置列的宽度
+        self.Tab_BasicInfo_iehistory_res.setColumnWidth(0, 150)
+        self.Tab_BasicInfo_iehistory_res.setColumnWidth(1, 70)
+        self.Tab_BasicInfo_iehistory_res.setColumnWidth(3, 400)
+        self.Tab_BasicInfo_iehistory_res.setColumnWidth(4, 200)
+        self.Tab_BasicInfo_iehistory_res.setColumnWidth(5, 200)
 
     def show_log(self):
-        self.w.show()
+        self.LogWindow.show()
 
     def print_res(self):
         """
         仅为测试用,用于测试数据输出
         """
-        module = "cmdline"
+        module = "iehistory"
         res = core_res.get_res(module)
         print(res)
         res = core_res.format_res(res, module)
@@ -276,17 +380,19 @@ class MainWindow(QMainWindow):
                 self.process_vol_v2.run()
             elif config["imagefile"] != "":
                 if module == "BasicInfo":
-                    sub_modules = ["pslist", "cmdline", "iehistory"]
-                    for i in sub_modules:
+                    self.BasicInfo_modules = ["pslist", "filescan", "cmdline", "iehistory"]
+                    for i in self.BasicInfo_modules:
                         core_res.clear_res(i)
                     # 设置状态变量，跟踪所有子线程是否都已经完成
                     self.Status_BasicInfo = 0
                     self.Btn_BasicInfo_start.setEnabled(False)
                     self.Btn_BasicInfo_start.setText("分析中")
+                    # 核心线程储存变量使用列表对象进行复用
                     self.process_vol_v2 = [
                         vol_backend_v2(config["imagefile"], "pslist", self.process_finished_pslist, profile=config["profile"]),
+                        vol_backend_v2(config["imagefile"], "filescan", self.process_finished_filescan, profile=config["profile"]),
                         vol_backend_v2(config["imagefile"], "cmdline", self.process_finished_cmdline, profile=config["profile"]),
-                        # vol_backend_v2(config["imagefile"], "iehistory", self.process_finished_iehistory, profile=config["profile"])
+                        vol_backend_v2(config["imagefile"], "iehistory", self.process_finished_iehistory, profile=config["profile"])
                     ]
                     for i in self.process_vol_v2:
                         i.run()
@@ -327,6 +433,9 @@ class MainWindow(QMainWindow):
             self.Combo_profile.addItem(i.strip())
 
     def process_finished_pslist(self):
+        """
+        pslist模块执行完毕
+        """
         logging.info("Process finished.")
         res = core_res.get_res("pslist")
         res = core_res.format_res(res, "pslist")
@@ -347,29 +456,77 @@ class MainWindow(QMainWindow):
             self.Tab_BasicInfo_pslist_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
 
         self.Status_BasicInfo += 1
-        if self.Status_BasicInfo == 3:
+        if self.Status_BasicInfo == len(self.BasicInfo_modules):
             self.process_vol_v2 = None
             self.Btn_BasicInfo_start.setEnabled(True)
             self.Btn_BasicInfo_start.setText("开始分析")
 
     def process_finished_cmdline(self):
+        """
+        cmdline模块执行完毕
+        """
         res = core_res.get_res("cmdline")
         res = core_res.format_res(res, "cmdline")
+
+        # 设置表格的行数和列数
+        self.Tab_BasicInfo_cmdline_res.setRowCount(len(res))
+        self.Tab_BasicInfo_cmdline_res.setColumnCount(len(res[0]))
+        # 遍历二维数组，将数据添加到表格中
+        for i, row in enumerate(res):
+            for j, item in enumerate(row):
+                # 创建 QTableWidgetItem 实例，并设置文本
+                table_item = QTableWidgetItem(item)
+                # 将 QTableWidgetItem 添加到表格的指定位置
+                self.Tab_BasicInfo_cmdline_res.setItem(i, j, table_item)
+        # 设置 Key 列的文本居中对齐
+        key_column = 0
+        for row in range(self.Tab_BasicInfo_cmdline_res.rowCount()):
+            self.Tab_BasicInfo_cmdline_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
+
         self.Status_BasicInfo += 1
-        if self.Status_BasicInfo == 3:
+        if self.Status_BasicInfo == len(self.BasicInfo_modules):
             self.process_vol_v2 = None
             self.Btn_BasicInfo_start.setEnabled(True)
             self.Btn_BasicInfo_start.setText("开始分析")
 
     def process_finished_iehistory(self):
+        """
+        iehistory模块执行完毕
+        """
         res = core_res.get_res("iehistory")
-        if res == core_res.res_empty:
-            print("Empty!")
+        res = core_res.format_res(res, "iehistory")
+
+        # 设置表格的行数和列数
+        self.Tab_BasicInfo_iehistory_res.setRowCount(len(res))
+        self.Tab_BasicInfo_iehistory_res.setColumnCount(len(res[0]))
+        # 遍历二维数组，将数据添加到表格中
+        for i, row in enumerate(res):
+            for j, item in enumerate(row):
+                # 创建 QTableWidgetItem 实例，并设置文本
+                table_item = QTableWidgetItem(item)
+                # 将 QTableWidgetItem 添加到表格的指定位置
+                self.Tab_BasicInfo_iehistory_res.setItem(i, j, table_item)
+        # 设置 Key 列的文本居中对齐
+        key_column = 0
+        for row in range(self.Tab_BasicInfo_iehistory_res.rowCount()):
+            self.Tab_BasicInfo_iehistory_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
+
         self.Status_BasicInfo += 1
-        if self.Status_BasicInfo == 3:
+        if self.Status_BasicInfo == len(self.BasicInfo_modules):
             self.process_vol_v2 = None
             self.Btn_BasicInfo_start.setEnabled(True)
             self.Btn_BasicInfo_start.setText("开始分析")
+
+    def process_finished_filescan(self):
+        """
+        filescan模块执行完毕
+        """
+        res = core_res.get_res("filescan")
+        res = core_res.format_res(res, "filescan")
+        Tab_BasicInfo_filescan_res_model = TableModel(res, self.Tab_BasicInfo_filescan_res_header)
+        self.Tab_BasicInfo_filescan_res_ProxyModel.setSourceModel(Tab_BasicInfo_filescan_res_model)
+        self.Tab_BasicInfo_filescan_res_ProxyModel.sort(0, Qt.AscendingOrder)
+        self.Tab_BasicInfo_filescan_res.setModel(self.Tab_BasicInfo_filescan_res_ProxyModel)
 
     def closeEvent(self, event):
         """
