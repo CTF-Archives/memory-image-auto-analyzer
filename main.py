@@ -527,6 +527,12 @@ class MainWindow(QMainWindow):
         self.Tab_BasicInfo_filescan_res_ProxyModel.setSourceModel(Tab_BasicInfo_filescan_res_model)
         self.Tab_BasicInfo_filescan_res_ProxyModel.sort(0, Qt.AscendingOrder)
         self.Tab_BasicInfo_filescan_res.setModel(self.Tab_BasicInfo_filescan_res_ProxyModel)
+        
+        self.Status_BasicInfo += 1
+        if self.Status_BasicInfo == len(self.BasicInfo_modules):
+            self.process_vol_v2 = None
+            self.Btn_BasicInfo_start.setEnabled(True)
+            self.Btn_BasicInfo_start.setText("开始分析")
 
     def closeEvent(self, event):
         """

@@ -37,6 +37,7 @@ Offset(P)            #Ptr   #Hnd Access Name
 0x000000003e02d2f0      5      0 R--r-d \Device\HarddiskVolume2\Windows\System32\catroot\{F750E6C3-38EE-11D1-85E5-00C04FC295EE}\Microsoft-Windows-Media-Format-Package~31bf3856ad364e35~amd64~~6.1.7601.17514.cat
 0x000000003e031070      1      1 R--rw- \Device\HarddiskVolume2\Windows\System32
 0x000000003e032500      1      1 R--rw- \Device\HarddiskVolume2\Windows\winsxs\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.7601.17514_none_fa396087175ac9ac
+
 """
 from backend.res import core_res
 res=core_res.format_res(a,"filescan")
