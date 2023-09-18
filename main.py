@@ -10,11 +10,9 @@ from layout.window_log import LogWindow
 from layout.tab_general import Tab_General
 from layout.tab_basicinfo import Tab_BasicInfo
 from backend.vol import vol_backend_v2
-from backend.res import core_res
-from backend.control import core_status
+from backend.core import core_control, core_res
 
 os.environ["QT_API"] = "pyside6"
-config = {"imagefile": "", "profile": ""}
 res = ""
 DEBUG = True
 dark_mode = False
@@ -24,30 +22,13 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        if DEBUG == True:
-            # 仅用于开发时测试
-            config["profile"] = "Win7SP1x64"
-            config["imagefile"] = "/home/randark/Snapshot19.vmem"
-
         self.setWindowTitle("Memory image auto-analyzer")
-        self.setMinimumSize(1200, 700)
+        self.setMinimumSize(1300, 700)
 
-        # 设置项储存
-        # self.settings = QSettings()
-
-        # 设置菜单栏
-        self.set_MenuBar()
-
-        # 设置状态栏
-        self.setStatusBar(QStatusBar(self))
-
-        # 设置变量
+        # 设置框体部件
         self.LogWindow = LogWindow()
-        self.LogWindow.show()
-        self.LogWindow.hide()
-
-        # 设置结果输出界面
         self.set_Tabs()
+        self.set_MenuBar()
 
     def set_MenuBar(self):
         menu_bar = self.menuBar()
@@ -77,10 +58,10 @@ class MainWindow(QMainWindow):
         action_ShowLog.setStatusTip("显示程序日志")
         action_ShowLog.triggered.connect(self.show_log)
         menu_help.addAction(action_ShowLog)
-        action_ShowRes = QAction(icon("ri.newspaper-line"), "Debug 显示输出", self)
-        action_ShowRes.setStatusTip("打印最新一次输出")
-        action_ShowRes.triggered.connect(self.print_res)
-        menu_help.addAction(action_ShowRes)
+        action_Debug = QAction(icon("ri.newspaper-line"), "Debug 显示输出", self)
+        action_Debug.setStatusTip("打印最新一次输出")
+        action_Debug.triggered.connect(self.Tab_BasicInfo.Subtab_Filescan.ClearContents)
+        menu_help.addAction(action_Debug)
 
     def set_Tabs(self):
         """
@@ -91,7 +72,7 @@ class MainWindow(QMainWindow):
 
         # 概览信息页面
         self.Tab_General = Tab_General()
-        self.Tab_General.Btn_start.clicked.connect(self.process_ImageInfo)
+        self.Tab_General.Btn_start.clicked.connect(self.process_General)
         self.Tab_General.Combo_profile.currentTextChanged.connect(self.set_profile)
         self.tabWidget.addTab(self.Tab_General, "镜像信息")
 
@@ -103,16 +84,16 @@ class MainWindow(QMainWindow):
         # 进程信息页面
         # TODO 做一个专门展示进程信息的TabWidget
 
-    def process_ImageInfo(self):
-        self.start_process("ImageInfo")
+    def process_General(self):
+        self.start_process("General")
 
     def process_BasicInfo(self):
         self.start_process("BasicInfo")
 
     def set_profile(self):
-        config["profile"] = self.Tab_General.Combo_profile.currentText()
+        core_control.config["profile"] = self.Tab_General.Combo_profile.currentText()
         logging.info("select profile:" + self.Tab_General.Combo_profile.currentText())
-        logging.debug("current config:" + str(config))
+        logging.debug("current config:" + str(core_control.config))
 
     def show_log(self):
         self.LogWindow.show()
@@ -131,52 +112,53 @@ class MainWindow(QMainWindow):
     def OpenFile(self):
         filename = QFileDialog.getOpenFileName(parent=self, caption="选择镜像文件", dir=".", filter="*")[0]
         if filename:
-            config["imagefile"] = filename
+            core_control.config["imagefile"] = filename
             logging.info("select image file:" + filename)
 
     def start_process(self, module: str, profile=None):
         """
         开始启动分析线程，仅在这里使用集合化模块指令
         """
-        if config["imagefile"] == "":
+        if core_control.config["imagefile"] == "":
             logging.warning("未指定文件")
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Warning!")
             dlg.setText("未选择有效的内存镜像文件!")
             dlg.exec()
             return 0
-        if core_status.VolProcess is None:
-            logging.info("Executing process")
-            if module == "ImageInfo":
+        if core_control.VolProcess is None:
+            logging.info("Executing process: {}".format(module))
+            if module == "General":
                 self.Tab_General.Btn_start.setEnabled(False)
-                self.Tab_General.Subtab_ImageInfo.clearContents()
+                self.Tab_General.Tab_ClearContents()
                 self.Tab_General.Btn_start.setText("分析中")
-                core_status.VolProcess = vol_backend_v2(config["imagefile"], "imageinfo", self.Tab_General.process_finished)
+                core_control.VolProcess = vol_backend_v2(core_control.config["imagefile"], "imageinfo", self.Tab_General.process_finished)
                 core_res.clear_res("imageinfo")
-                core_status.VolProcess.run()
-            elif config["imagefile"] != "":
+                core_control.VolProcess.run()
+            elif core_control.config["imagefile"] != "":
                 if module == "BasicInfo":
                     self.BasicInfo_modules = ["pslist", "filescan", "cmdline", "iehistory"]
                     for i in self.BasicInfo_modules:
                         core_res.clear_res(i)
+                    self.Tab_BasicInfo.Tab_ClearContents()
                     # 设置状态变量，跟踪所有子线程是否都已经完成
-                    core_status.BasicInfo_status = 0
+                    core_control.BasicInfo_status = 0
                     self.Tab_BasicInfo.Btn_start.setEnabled(False)
                     self.Tab_BasicInfo.Btn_start.setText("分析中")
                     # 核心线程储存变量使用列表对象进行复用
-                    core_status.VolProcess = [
-                        vol_backend_v2(config["imagefile"], "pslist", self.Tab_BasicInfo.process_finished_pslist, profile=config["profile"]),
-                        vol_backend_v2(config["imagefile"], "filescan", self.Tab_BasicInfo.process_finished_filescan, profile=config["profile"]),
-                        vol_backend_v2(config["imagefile"], "cmdline", self.Tab_BasicInfo.process_finished_cmdline, profile=config["profile"]),
-                        vol_backend_v2(config["imagefile"], "iehistory", self.Tab_BasicInfo.process_finished_iehistory, profile=config["profile"]),
+                    core_control.VolProcess = [
+                        vol_backend_v2(core_control.config["imagefile"], "pslist", self.Tab_BasicInfo.process_finished_pslist, profile=core_control.config["profile"]),
+                        vol_backend_v2(core_control.config["imagefile"], "filescan", self.Tab_BasicInfo.process_finished_filescan, profile=core_control.config["profile"]),
+                        vol_backend_v2(core_control.config["imagefile"], "cmdline", self.Tab_BasicInfo.process_finished_cmdline, profile=core_control.config["profile"]),
+                        vol_backend_v2(core_control.config["imagefile"], "iehistory", self.Tab_BasicInfo.process_finished_iehistory, profile=core_control.config["profile"]),
                     ]
-                    for i in core_status.VolProcess:
+                    for i in core_control.VolProcess:
                         i.run()
         else:
             logging.warning("程序正忙")
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Warning!")
-            dlg.setText("当前正在运行: {muddle_name}".format(muddle_name=core_status.VolProcess))
+            dlg.setText("当前正在运行: {muddle_name}".format(muddle_name=core_control.VolProcess))
             dlg.exec()
             return 0
 
@@ -192,6 +174,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     if dark_mode:
         app.setStyleSheet(qdarkstyle.load_stylesheet())
+    if DEBUG:
+        core_control.config = {"imagefile": "/home/randark/Snapshot19.vmem", "profile": "Win7SP1x64"}
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
