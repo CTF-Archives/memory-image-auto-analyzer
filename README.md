@@ -17,6 +17,7 @@ python3 main.py
 ```
 
 ## TODO - 项目规划-windows
+
 - pslist 和 pstree 整合进树状组件，支持选中进程进行 dump （ memdump 和 procdump ）
 - 加入网络分析，包含 netscan
 - 加入环境信息分析，包含注册表 printkey，环境变量 envars
@@ -25,6 +26,7 @@ python3 main.py
 - 加入常见信息提取，如剪贴板，桌面截图
 
 ## filescan 搜索框正则示例
+
 ```shell
-flag|.zip$|.rar$|.7z$|.txt$|.png$|.jpg$|.gif$|.pdf$|.doc$|.docx$|.pcap$|.pcapng$|.raw$|.kdbx$|Desktop
+flag|Desktop|.zip$|.rar$|.7z$|.txt$|.png$|.jpg$|.gif$|.pdf$|.doc$|.docx$|.pcap$|.pcapng$|.raw$|.kdbx$
 ```
