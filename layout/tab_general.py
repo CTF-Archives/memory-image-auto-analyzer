@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import *
 import logging
 from backend.res import core_res
+from backend.control import core_status
 from PySide6.QtCore import Qt
 
 
@@ -49,7 +50,7 @@ class Tab_General(QWidget):
         imageinfo模块执行完毕
         """
         logging.info("Process finished.")
-        self.process_vol_v2 = None
+        core_status.VolProcess=None
         self.Btn_start.setEnabled(True)
         self.Btn_start.setText("开始分析")
         res = core_res.get_res("imageinfo")

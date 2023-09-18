@@ -1,5 +1,4 @@
-class result():
-
+class result:
     def __init__(self) -> None:
         self.res_empty = "Module is empty"
         self.res_imageinfo = {}
