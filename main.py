@@ -7,23 +7,22 @@ import qdarkstyle
 import logging
 from qtawesome import icon
 from layout.window_log import LogWindow
-from layout.module_TableModel import TableModel
+from layout.module_tablemodel import TableModel
 from backend.vol import vol_backend_v2
 from backend.res import core_res
 
-os.environ['QT_API'] = 'pyside6'
+os.environ["QT_API"] = "pyside6"
 
 config = {"imagefile": "", "profile": ""}
 
 res = ""
 
-DEBUG = False
+DEBUG = True
 
 dark_mode = False
 
 
 class MainWindow(QMainWindow):
-
     def __init__(self):
         super().__init__()
 
@@ -94,9 +93,12 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tabWidget)
 
         # 镜像文件信息页面
-        self.Tab_ImageInfo = QWidget()
-        self.tabWidget.addTab(self.Tab_ImageInfo, "镜像信息")
-        self.set_tab_ImageInfo()
+        from layout.tab_general import Tab_General
+
+        self.Tab_General = Tab_General()
+        self.Tab_General.Btn_start.clicked.connect(self.process_ImageInfo)
+        self.Tab_General.Combo_profile.currentTextChanged.connect(self.set_profile)
+        self.tabWidget.addTab(self.Tab_General, "镜像信息")
 
         # 基础信息页面
         self.Tab_BasicInfo = QWidget()
@@ -113,57 +115,9 @@ class MainWindow(QMainWindow):
         self.start_process("BasicInfo")
 
     def set_profile(self):
-        config["profile"] = self.Combo_profile.currentText()
-        logging.info("select profile:" + self.Combo_profile.currentText())
+        config["profile"] = self.Tab_General.Combo_profile.currentText()
+        logging.info("select profile:" + self.Tab_General.Combo_profile.currentText())
         logging.debug("current config:" + str(config))
-
-    def set_tab_ImageInfo(self):
-        # 设置主布局
-        Tab_ImageInfo_pagelayout = QVBoxLayout()
-        self.Tab_ImageInfo.setLayout(Tab_ImageInfo_pagelayout)
-        Tab_ImageInfo_control_layout = QHBoxLayout()
-        Tab_ImageInfo_info_layout = QVBoxLayout()
-        Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_control_layout)
-        Tab_ImageInfo_pagelayout.addLayout(Tab_ImageInfo_info_layout)
-        # 设置第一栏控制栏, 开始分析的按钮
-        self.Btn_ImageInfo_start = QPushButton("开始分析")
-        self.Btn_ImageInfo_start.clicked.connect(self.process_ImageInfo)
-        Tab_ImageInfo_control_layout.addWidget(self.Btn_ImageInfo_start)
-        # 导出报告的按钮
-        self.Btn_ImageInfo_export = QPushButton("导出报告")
-        # TODO 增加导出报告的功能
-        Tab_ImageInfo_control_layout.addWidget(self.Btn_ImageInfo_export)
-        # 显示Profile的标签
-        self.Label_Imageinfo = QLabel("Profile:")
-        self.Label_Imageinfo.setFixedWidth(50)
-        Tab_ImageInfo_control_layout.addWidget(self.Label_Imageinfo)
-        # 选择Profile的下拉框
-        self.Combo_profile = QComboBox()
-        self.Combo_profile.addItem("还未分析")
-        self.Combo_profile.currentTextChanged.connect(self.set_profile)
-        Tab_ImageInfo_control_layout.addWidget(self.Combo_profile)
-
-        # 设置第二栏信息输出栏
-        self.Tab_ImageInfo_res = QTableWidget()
-        Tab_ImageInfo_info_layout.addWidget(self.Tab_ImageInfo_res)
-
-        # 设置表格输出形式
-        self.Tab_ImageInfo_res.setRowCount(5)
-        horizontal_header_labels = ['Key', 'Value']
-        self.Tab_ImageInfo_res.setColumnCount(len(horizontal_header_labels))
-        self.Tab_ImageInfo_res.setHorizontalHeaderLabels(horizontal_header_labels)
-        # 设置平滑滚动
-        self.Tab_ImageInfo_res.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.Tab_ImageInfo_res.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.Tab_ImageInfo_res.horizontalScrollBar().setSingleStep(10)
-        self.Tab_ImageInfo_res.verticalScrollBar().setSingleStep(10)
-        # 将 QTableWidget 设置为不可编辑
-        self.Tab_ImageInfo_res.setEditTriggers(QTableWidget.NoEditTriggers)
-        # 隐藏垂直方向表头
-        self.Tab_ImageInfo_res.verticalHeader().setVisible(False)
-        # 设置 Key 列的宽度为 100
-        self.Tab_ImageInfo_res.setColumnWidth(0, 250)
-        self.Tab_ImageInfo_res.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
     def set_tab_BasicInfo(self):
         """
@@ -353,7 +307,7 @@ class MainWindow(QMainWindow):
 
     # 选取镜像文件
     def OpenFile(self):
-        filename = QFileDialog.getOpenFileName(parent=self, caption='选择镜像文件', dir='.', filter='*')[0]
+        filename = QFileDialog.getOpenFileName(parent=self, caption="选择镜像文件", dir=".", filter="*")[0]
         if filename:
             config["imagefile"] = filename
             logging.info("select image file:" + filename)
@@ -372,10 +326,10 @@ class MainWindow(QMainWindow):
         if self.process_vol_v2 is None:  # No process running.
             logging.info("Executing process")
             if module == "ImageInfo":
-                self.Btn_ImageInfo_start.setEnabled(False)
-                self.Tab_ImageInfo_res.clearContents()
-                self.Btn_ImageInfo_start.setText("分析中")
-                self.process_vol_v2 = vol_backend_v2(config["imagefile"], "imageinfo", self.process_finished_imageinfo)
+                self.Tab_General.Btn_start.setEnabled(False)
+                self.Tab_General.Subtab_ImageInfo.clearContents()
+                self.Tab_General.Btn_start.setText("分析中")
+                self.process_vol_v2 = vol_backend_v2(config["imagefile"], "imageinfo", self.Tab_General.process_finished)
                 core_res.clear_res("imageinfo")
                 self.process_vol_v2.run()
             elif config["imagefile"] != "":
@@ -392,7 +346,7 @@ class MainWindow(QMainWindow):
                         vol_backend_v2(config["imagefile"], "pslist", self.process_finished_pslist, profile=config["profile"]),
                         vol_backend_v2(config["imagefile"], "filescan", self.process_finished_filescan, profile=config["profile"]),
                         vol_backend_v2(config["imagefile"], "cmdline", self.process_finished_cmdline, profile=config["profile"]),
-                        vol_backend_v2(config["imagefile"], "iehistory", self.process_finished_iehistory, profile=config["profile"])
+                        vol_backend_v2(config["imagefile"], "iehistory", self.process_finished_iehistory, profile=config["profile"]),
                     ]
                     for i in self.process_vol_v2:
                         i.run()
@@ -403,34 +357,6 @@ class MainWindow(QMainWindow):
             dlg.setText("当前存在其他模块正在运行!")
             dlg.exec()
             return 0
-
-    def process_finished_imageinfo(self):
-        """
-        imageinfo模块执行完毕
-        """
-        logging.info("Process finished.")
-        self.process_vol_v2 = None
-        self.Btn_ImageInfo_start.setEnabled(True)
-        self.Btn_ImageInfo_start.setText("开始分析")
-        res = core_res.get_res("imageinfo")
-        res = core_res.format_res(res, "imageinfo")
-        # 设置表格的行数和列数
-        self.Tab_ImageInfo_res.setRowCount(len(res))
-        self.Tab_ImageInfo_res.setColumnCount(len(res[0]))
-        # 遍历二维数组，将数据添加到表格中
-        for i, row in enumerate(res):
-            for j, item in enumerate(row):
-                # 创建 QTableWidgetItem 实例，并设置文本
-                table_item = QTableWidgetItem(item)
-                # 将 QTableWidgetItem 添加到表格的指定位置
-                self.Tab_ImageInfo_res.setItem(i, j, table_item)
-        # 设置 Key 列的文本居中对齐
-        key_column = 0
-        for row in range(self.Tab_ImageInfo_res.rowCount()):
-            self.Tab_ImageInfo_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
-        self.Combo_profile.clear()
-        for i in res[0][1].split(","):
-            self.Combo_profile.addItem(i.strip())
 
     def process_finished_pslist(self):
         """
@@ -527,7 +453,7 @@ class MainWindow(QMainWindow):
         self.Tab_BasicInfo_filescan_res_ProxyModel.setSourceModel(Tab_BasicInfo_filescan_res_model)
         self.Tab_BasicInfo_filescan_res_ProxyModel.sort(0, Qt.AscendingOrder)
         self.Tab_BasicInfo_filescan_res.setModel(self.Tab_BasicInfo_filescan_res_ProxyModel)
-        
+
         self.Status_BasicInfo += 1
         if self.Status_BasicInfo == len(self.BasicInfo_modules):
             self.process_vol_v2 = None
