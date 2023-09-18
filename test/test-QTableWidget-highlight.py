@@ -5,10 +5,8 @@ import random, string, sys
 
 
 class MainWindow(QMainWindow):
-
     def __init__(self):
         super().__init__()
-
 
         self.query = QLineEdit()
         self.query.setPlaceholderText("Search...")
@@ -23,7 +21,7 @@ class MainWindow(QMainWindow):
 
         for c in range(0, n_cols):
             for r in range(0, n_rows):
-                s = ''.join(random.choice(string.ascii_lowercase) for n in range(10))
+                s = "".join(random.choice(string.ascii_lowercase) for n in range(10))
                 i = QTableWidgetItem(s)
                 self.table.setItem(c, r, i)
 

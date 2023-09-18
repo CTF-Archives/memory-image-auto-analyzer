@@ -24,8 +24,8 @@ class vol_backend_v2(QProcess):
         # self.process.finished.connect(self.process_finished)
         self.process.finished.connect(self.func_finished)
         if self.profile != None:
-            print("vol.py", " ".join(["-f", self.imagefile, "--profile="+self.profile, self.module]))
-            self.process.start("vol.py", ["-f", self.imagefile, "--profile="+self.profile, self.module])
+            print("vol.py", " ".join(["-f", self.imagefile, "--profile=" + self.profile, self.module]))
+            self.process.start("vol.py", ["-f", self.imagefile, "--profile=" + self.profile, self.module])
         else:
             print("vol.py", " ".join(["-f", self.imagefile, self.module]))
             self.process.start("vol.py", ["-f", self.imagefile, self.module])
@@ -43,9 +43,9 @@ class vol_backend_v2(QProcess):
 
     def handle_state(self, state):
         states = {
-            QProcess.NotRunning: 'Not running',
-            QProcess.Starting: 'Starting',
-            QProcess.Running: 'Running',
+            QProcess.NotRunning: "Not running",
+            QProcess.Starting: "Starting",
+            QProcess.Running: "Running",
         }
         state_name = states[state]
         logging.debug(f"State changed: {state_name}")

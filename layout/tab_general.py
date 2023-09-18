@@ -50,7 +50,7 @@ class Tab_General(QWidget):
         imageinfo模块执行完毕
         """
         logging.info("Process finished.")
-        core_status.VolProcess=None
+        core_status.VolProcess = None
         self.Btn_start.setEnabled(True)
         self.Btn_start.setText("开始分析")
         res = core_res.get_res("imageinfo")

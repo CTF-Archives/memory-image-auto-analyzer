@@ -5,6 +5,7 @@ import logging
 # Uncomment below for terminal log messages
 # logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+
 class QTextEditLogger(logging.Handler):
     def __init__(self, parent):
         super().__init__()
@@ -22,13 +23,13 @@ class MyDialog(QtWidgets.QDialog, QtWidgets.QPlainTextEdit):
 
         logTextBox = QTextEditLogger(self)
         # You can format what is printed to text box
-        logTextBox.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logTextBox.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
         logging.getLogger().addHandler(logTextBox)
         # You can control the logging level
         logging.getLogger().setLevel(logging.DEBUG)
 
         self._button = QtWidgets.QPushButton(self)
-        self._button.setText('Test Me')
+        self._button.setText("Test Me")
 
         layout = QtWidgets.QVBoxLayout()
         # Add the new logging box widget to the layout
@@ -40,10 +41,11 @@ class MyDialog(QtWidgets.QDialog, QtWidgets.QPlainTextEdit):
         self._button.clicked.connect(self.test)
 
     def test(self):
-        logging.debug('damn, a bug')
-        logging.info('something to remember')
-        logging.warning('that\'s not right')
-        logging.error('foobar')
+        logging.debug("damn, a bug")
+        logging.info("something to remember")
+        logging.warning("that's not right")
+        logging.error("foobar")
+
 
 app = QtWidgets.QApplication(sys.argv)
 dlg = MyDialog()

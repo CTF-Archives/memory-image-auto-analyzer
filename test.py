@@ -1,4 +1,4 @@
-a=r"""
+a = r"""
 Offset(P)            #Ptr   #Hnd Access Name
 ------------------ ------ ------ ------ ----
 0x000000003e001150      1      1 R--r-- \Device\HarddiskVolume2\Windows\Registration\R000000000006.clb
@@ -40,6 +40,7 @@ Offset(P)            #Ptr   #Hnd Access Name
 
 """
 from backend.res import core_res
-res=core_res.format_res(a,"filescan")
+
+res = core_res.format_res(a, "filescan")
 for i in res:
     print(i)

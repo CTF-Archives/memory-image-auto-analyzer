@@ -1,7 +1,8 @@
 import sys
-from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot,Signal,QObject
+from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot, Signal, QObject
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit
 from time import sleep
+
 
 class CommandTask(QRunnable):
     def __init__(self, command):
@@ -13,11 +14,13 @@ class CommandTask(QRunnable):
         # 执行需要在后台线程中完成的任务
         print("Task started")
         import subprocess
+
         result = subprocess.run(self.command, capture_output=True, text=True)
         output = result.stdout.strip()
         # sleep(3)
         print(f"Command: {self.command}, Output: {output}")
         self.signal.finished.emit(output)
+
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -42,7 +45,7 @@ class MainWindow(QWidget):
         self.button.setEnabled(False)
         self.console.clear()
 
-        commands = ["date --help","whoami --help"]
+        commands = ["date --help", "whoami --help"]
         for command in commands:
             task = CommandTask(command.split(" "))
             task.signal = TaskSignal()
@@ -53,8 +56,10 @@ class MainWindow(QWidget):
     def outputResult(self, result):
         self.console.append(result)
 
+
 class TaskSignal(QObject):
     finished = Signal(str)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

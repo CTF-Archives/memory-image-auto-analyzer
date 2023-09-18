@@ -3,7 +3,6 @@ from PySide6.QtWidgets import *
 
 
 class QTextEditLogger(logging.Handler):
-
     def __init__(self, parent):
         super().__init__()
         self.widget = QPlainTextEdit(parent)
@@ -15,15 +14,15 @@ class QTextEditLogger(logging.Handler):
         msg = self.format(record)
         self.widget.appendPlainText(msg)
 
-class LogWindow(QWidget):
 
+class LogWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("设置 in debug")
 
         self.logTextBox = QTextEditLogger(self)
-        self.logTextBox.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - module: %(module)s - funcName: %(funcName)s\n--> %(message)s\n'))
+        self.logTextBox.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - module: %(module)s - funcName: %(funcName)s\n--> %(message)s\n"))
         logging.getLogger().addHandler(self.logTextBox)
         logging.getLogger().setLevel(logging.DEBUG)
 

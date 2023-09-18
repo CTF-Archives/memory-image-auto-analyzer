@@ -3,12 +3,13 @@ from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 
+
 class Window(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
 
         self.setWindowTitle("Scrolling QTableWidget smoothly BY MOUSE WHEEL")
-        
+
         label = QLabel("singleStep:")
         self.spinbox = QSpinBox()
         self.spinbox.setValue(1)
@@ -20,11 +21,11 @@ class Window(QWidget):
 
         for i in range(100):
             for j in range(5):
-                self.widget.setItem(i, j, QTableWidgetItem(str(i+j)))
+                self.widget.setItem(i, j, QTableWidgetItem(str(i + j)))
 
         self.widget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.widget.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        #self.widget.verticalScrollBar().setSingleStep(1)
+        # self.widget.verticalScrollBar().setSingleStep(1)
         self.set_single_step()
 
         spinbox_layout = QHBoxLayout()
@@ -44,7 +45,8 @@ class Window(QWidget):
         self.widget.verticalScrollBar().setSingleStep(5)
         self.widget.horizontalScrollBar().setSingleStep(5)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = Window()
     window.resize(800, 600)

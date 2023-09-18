@@ -1,6 +1,6 @@
 import sys
 from PySide6.QtWidgets import QApplication, QWidget, QTableView, QMainWindow, QVBoxLayout, QLineEdit, QHeaderView
-from PySide6.QtCore import Qt, QSortFilterProxyModel, QAbstractTableModel,QRegularExpression
+from PySide6.QtCore import Qt, QSortFilterProxyModel, QAbstractTableModel, QRegularExpression
 
 
 class TableModel(QAbstractTableModel):
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
             ["this", 8, 9],
         ]
 
-        headers = ['Column 1', 'Column 2', 'Column 3']
+        headers = ["Column 1", "Column 2", "Column 3"]
 
         self.model = TableModel(data, headers)
         self.proxy_model = QSortFilterProxyModel()

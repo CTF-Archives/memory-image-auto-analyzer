@@ -1,11 +1,9 @@
-from PySide6.QtWidgets import (QApplication, QMainWindow, QPushButton, QPlainTextEdit,
-                                QVBoxLayout, QWidget)
+from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QPlainTextEdit, QVBoxLayout, QWidget
 from PySide6.QtCore import QProcess
 import sys
 
 
 class MainWindow(QMainWindow):
-
     def __init__(self):
         super().__init__()
 
@@ -36,7 +34,7 @@ class MainWindow(QMainWindow):
             self.p.readyReadStandardError.connect(self.handle_stderr)
             self.p.stateChanged.connect(self.handle_state)
             self.p.finished.connect(self.process_finished)  # Clean up once complete.
-            self.p.start("sleep", ['1'])
+            self.p.start("sleep", ["1"])
 
     def handle_stderr(self):
         data = self.p.readAllStandardError()
@@ -50,9 +48,9 @@ class MainWindow(QMainWindow):
 
     def handle_state(self, state):
         states = {
-            QProcess.NotRunning: 'Not running',
-            QProcess.Starting: 'Starting',
-            QProcess.Running: 'Running',
+            QProcess.NotRunning: "Not running",
+            QProcess.Starting: "Starting",
+            QProcess.Running: "Running",
         }
         state_name = states[state]
         self.message(f"State changed: {state_name}")
