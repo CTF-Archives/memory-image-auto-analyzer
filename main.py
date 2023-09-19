@@ -9,12 +9,13 @@ from qtawesome import icon
 from layout.window_log import LogWindow
 from layout.tab_general import Tab_General
 from layout.tab_basicinfo import Tab_BasicInfo
+from layout.tab_credential import Tab_Credential
 from backend.vol import vol_backend_v2
 from backend.core import core_control, core_res
 
 os.environ["QT_API"] = "pyside6"
 res = ""
-DEBUG = False
+DEBUG = True
 dark_mode = False
 
 
@@ -81,14 +82,19 @@ class MainWindow(QMainWindow):
         self.Tab_BasicInfo.Btn_start.pressed.connect(self.process_BasicInfo)
         self.tabWidget.addTab(self.Tab_BasicInfo, "基础信息")
 
-        # 进程信息页面
-        # TODO 做一个专门展示进程信息的TabWidget
+        # 凭据信息页面
+        self.Tab_Credential = Tab_Credential()
+        self.Tab_Credential.Btn_start.pressed.connect(self.process_Credential)
+        self.tabWidget.addTab(self.Tab_Credential, "凭据信息")
 
     def process_General(self):
         self.start_process("General")
 
     def process_BasicInfo(self):
         self.start_process("BasicInfo")
+
+    def process_Credential(self):
+        pass
 
     def set_profile(self):
         core_control.config["profile"] = self.Tab_General.Combo_profile.currentText()
