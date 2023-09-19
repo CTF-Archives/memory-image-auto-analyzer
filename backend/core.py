@@ -1,4 +1,6 @@
 from datetime import datetime
+import logging
+from PySide6.QtWidgets import *
 
 
 class control:
@@ -7,6 +9,26 @@ class control:
         self.BasicInfo_status = 0
         self.BasicInfo_modules = ["pslist", "filescan", "cmdline", "iehistory"]
         self.config = {"imagefile": "", "profile": ""}
+
+    def check_imagefile(self, window: QMainWindow):
+        if self.config["imagefile"] == "":
+            logging.warning("未指定文件")
+            dlg = QMessageBox(window)
+            dlg.setWindowTitle("Warning!")
+            dlg.setText("未选择有效的内存镜像文件!")
+            dlg.exec()
+            return False
+        return True
+
+    def check_profile(self, window: QMainWindow):
+        if self.config["profile"] == "":
+            logging.warning("未指定 profile")
+            dlg = QMessageBox(window)
+            dlg.setWindowTitle("Warning!")
+            dlg.setText("未选择有效的 profile 参数!")
+            dlg.exec()
+            return False
+        return True
 
 
 class result:

@@ -35,25 +35,20 @@ class Subtab_Filescan(QWidget):
 
         # 设置搜索栏
         self.Label_Search = QLabel("搜索（支持 regex ）:")
-
-        # self.Label_Search.setFixedWidth(50)
         Tab_control_layout.addWidget(self.Label_Search)
         self.Tab_searchbar = QLineEdit()
-        self.Tab_searchbar.textChanged.connect(self.set_filter_data)
+        self.Tab_searchbar.returnPressed.connect(self.process_search)
         Tab_control_layout.addWidget(self.Tab_searchbar)
+        self.Btn_Search = QPushButton("Search")
+        self.Btn_Search.clicked.connect(self.process_search)
+        Tab_control_layout.addWidget(self.Btn_Search)
 
         # 设置信息输出栏
         self.Tab_res = QTableView()
         Tab_info_layout.addWidget(self.Tab_res)
 
         # 设置表格表头和筛选器，将模型定义部分抽出为独立函数
-        self.Tab_res_header = ["Offset(P)", "File Path", "#Ptr", "#Hnd", "Access"]
-        Tab_res_model = TableModel([["", "", "", "", ""]], self.Tab_res_header)
-        self.Tab_res_ProxyModel = QSortFilterProxyModel()
-        self.Tab_res_ProxyModel.setFilterKeyColumn(-1)
-        self.Tab_res_ProxyModel.setSourceModel(Tab_res_model)
-        self.Tab_res_ProxyModel.sort(0, Qt.AscendingOrder)
-        self.Tab_res.setModel(self.Tab_res_ProxyModel)
+        self.table_init()
 
         # 设置平滑滚动
         self.Tab_res.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
@@ -71,6 +66,18 @@ class Subtab_Filescan(QWidget):
         self.Tab_res.setColumnWidth(0, 150)
         self.Tab_res.setColumnWidth(1, 800)
 
+    def process_search(self):
+        self.set_filter_data(self.Tab_searchbar.text())
+
+    def table_init(self):
+        self.Tab_res_header = ["Offset(P)", "File Path", "#Ptr", "#Hnd", "Access"]
+        Tab_res_model = TableModel([["", "", "", "", ""]], self.Tab_res_header)
+        self.Tab_res_ProxyModel = QSortFilterProxyModel()
+        self.Tab_res_ProxyModel.setFilterKeyColumn(-1)
+        self.Tab_res_ProxyModel.setSourceModel(Tab_res_model)
+        self.Tab_res_ProxyModel.sort(0, Qt.AscendingOrder)
+        self.Tab_res.setModel(self.Tab_res_ProxyModel)
+
     def set_filter_data(self, text):
         regex = QRegularExpression(text)
         self.Tab_res_ProxyModel.setFilterRegularExpression(regex)
@@ -80,3 +87,6 @@ class Subtab_Filescan(QWidget):
         header = self.Tab_res.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)
+
+    def Tab_ClearContents(self):
+        self.table_init()

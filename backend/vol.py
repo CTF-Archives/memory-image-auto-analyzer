@@ -1,6 +1,6 @@
 from PySide6.QtCore import QProcess
 import logging
-from backend.res import core_res
+from backend.core import core_res
 
 
 class vol_backend_v2(QProcess):

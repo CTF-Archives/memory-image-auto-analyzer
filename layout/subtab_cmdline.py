@@ -37,3 +37,6 @@ class Subtab_Cmdline(QWidget):
         self.Tab_res.setColumnWidth(0, 100)
         self.Tab_res.setColumnWidth(1, 70)
         self.Tab_res.setColumnWidth(2, 1000)
+
+    def Tab_ClearContents(self):
+        self.Tab_res.clearContents()

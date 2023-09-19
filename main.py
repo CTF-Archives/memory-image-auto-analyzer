@@ -14,7 +14,7 @@ from backend.core import core_control, core_res
 
 os.environ["QT_API"] = "pyside6"
 res = ""
-DEBUG = True
+DEBUG = False
 dark_mode = False
 
 
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         menu_help.addAction(action_ShowLog)
         action_Debug = QAction(icon("ri.newspaper-line"), "Debug 显示输出", self)
         action_Debug.setStatusTip("打印最新一次输出")
-        action_Debug.triggered.connect(self.Tab_BasicInfo.Subtab_Filescan.ClearContents)
+        action_Debug.triggered.connect(self.Tab_BasicInfo.Tab_ClearContents)
         menu_help.addAction(action_Debug)
 
     def set_Tabs(self):
@@ -115,52 +115,51 @@ class MainWindow(QMainWindow):
             core_control.config["imagefile"] = filename
             logging.info("select image file:" + filename)
 
-    def start_process(self, module: str, profile=None):
+    def start_process(self, module: str):
         """
         开始启动分析线程，仅在这里使用集合化模块指令
         """
-        if core_control.config["imagefile"] == "":
-            logging.warning("未指定文件")
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Warning!")
-            dlg.setText("未选择有效的内存镜像文件!")
-            dlg.exec()
+        if not core_control.check_imagefile(self):
             return 0
         if core_control.VolProcess is None:
             logging.info("Executing process: {}".format(module))
-            if module == "General":
-                self.Tab_General.Btn_start.setEnabled(False)
-                self.Tab_General.Tab_ClearContents()
-                self.Tab_General.Btn_start.setText("分析中")
-                core_control.VolProcess = vol_backend_v2(core_control.config["imagefile"], "imageinfo", self.Tab_General.process_finished)
-                core_res.clear_res("imageinfo")
-                core_control.VolProcess.run()
-            elif core_control.config["imagefile"] != "":
-                if module == "BasicInfo":
-                    self.BasicInfo_modules = ["pslist", "filescan", "cmdline", "iehistory"]
-                    for i in self.BasicInfo_modules:
-                        core_res.clear_res(i)
-                    self.Tab_BasicInfo.Tab_ClearContents()
-                    # 设置状态变量，跟踪所有子线程是否都已经完成
-                    core_control.BasicInfo_status = 0
-                    self.Tab_BasicInfo.Btn_start.setEnabled(False)
-                    self.Tab_BasicInfo.Btn_start.setText("分析中")
-                    # 核心线程储存变量使用列表对象进行复用
-                    core_control.VolProcess = [
-                        vol_backend_v2(core_control.config["imagefile"], "pslist", self.Tab_BasicInfo.process_finished_pslist, profile=core_control.config["profile"]),
-                        vol_backend_v2(core_control.config["imagefile"], "filescan", self.Tab_BasicInfo.process_finished_filescan, profile=core_control.config["profile"]),
-                        vol_backend_v2(core_control.config["imagefile"], "cmdline", self.Tab_BasicInfo.process_finished_cmdline, profile=core_control.config["profile"]),
-                        vol_backend_v2(core_control.config["imagefile"], "iehistory", self.Tab_BasicInfo.process_finished_iehistory, profile=core_control.config["profile"]),
-                    ]
+            match module:
+                case "General":
+                    self.Tab_General.Btn_start.setEnabled(False)
+                    self.Tab_General.Tab_ClearContents()
+                    self.Tab_General.Btn_start.setText("分析中")
+                    core_control.VolProcess = [vol_backend_v2(core_control.config["imagefile"], "imageinfo", self.Tab_General.process_finished)]
+                    core_res.clear_res("imageinfo")
                     for i in core_control.VolProcess:
                         i.run()
+                case "BasicInfo":
+                    if core_control.check_profile(self):
+                        for i in core_control.BasicInfo_modules:
+                            core_res.clear_res(i)
+                        self.Tab_BasicInfo.Tab_ClearContents()
+                        # 设置状态变量，跟踪所有子线程是否都已经完成
+                        core_control.BasicInfo_status = 0
+                        self.Tab_BasicInfo.Btn_start.setEnabled(False)
+                        self.Tab_BasicInfo.Btn_start.setText("分析中")
+                        # 核心线程储存变量使用列表对象进行复用
+                        core_control.VolProcess = [
+                            vol_backend_v2(core_control.config["imagefile"], "pslist", self.Tab_BasicInfo.process_finished_pslist, profile=core_control.config["profile"]),
+                            vol_backend_v2(core_control.config["imagefile"], "filescan", self.Tab_BasicInfo.process_finished_filescan, profile=core_control.config["profile"]),
+                            vol_backend_v2(core_control.config["imagefile"], "cmdline", self.Tab_BasicInfo.process_finished_cmdline, profile=core_control.config["profile"]),
+                            vol_backend_v2(core_control.config["imagefile"], "iehistory", self.Tab_BasicInfo.process_finished_iehistory, profile=core_control.config["profile"]),
+                        ]
+                        for i in core_control.VolProcess:
+                            i.run()
         else:
-            logging.warning("程序正忙")
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Warning!")
-            dlg.setText("当前正在运行: {muddle_name}".format(muddle_name=core_control.VolProcess))
-            dlg.exec()
+            self.warning_ProcessConflict()
             return 0
+
+    def warning_ProcessConflict(self):
+        logging.warning("程序正忙")
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Warning!")
+        dlg.setText("当前正在运行: {muddle_name}".format(muddle_name=", ".join([i.module for i in core_control.VolProcess])))
+        dlg.exec()
 
     def closeEvent(self, event):
         """

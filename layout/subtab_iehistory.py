@@ -39,3 +39,6 @@ class Subtab_Iehistory(QWidget):
         self.Tab_res.setColumnWidth(3, 400)
         self.Tab_res.setColumnWidth(4, 200)
         self.Tab_res.setColumnWidth(5, 200)
+
+    def Tab_ClearContents(self):
+        self.Tab_res.clearContents()

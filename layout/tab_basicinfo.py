@@ -1,8 +1,7 @@
 from PySide6.QtWidgets import *
 import logging
-from backend.res import core_res
 from PySide6.QtCore import Qt
-from backend.control import core_status
+from backend.core import core_control, core_res
 from layout.subtab_pslist import Subtab_Pslist
 from layout.subtab_filescan import Subtab_Filescan, TableModel
 from layout.subtab_cmdline import Subtab_Cmdline
@@ -35,22 +34,28 @@ class Tab_BasicInfo(QWidget):
 
         # 设置子窗口布局
         self.Subtab_Pslist = Subtab_Pslist()
-        self.Subtab_filescan = Subtab_Filescan()
-        self.Subtab_cmdline = Subtab_Cmdline()
-        self.Subtab_iehistory = Subtab_Iehistory()
+        self.Subtab_Filescan = Subtab_Filescan()
+        self.Subtab_Cmdline = Subtab_Cmdline()
+        self.Subtab_Iehistory = Subtab_Iehistory()
         self_result.addTab(self.Subtab_Pslist, "pslist")
-        self_result.addTab(self.Subtab_filescan, "filescan")
-        self_result.addTab(self.Subtab_cmdline, "cmdline")
-        self_result.addTab(self.Subtab_iehistory, "iehistory")
+        self_result.addTab(self.Subtab_Filescan, "filescan")
+        self_result.addTab(self.Subtab_Cmdline, "cmdline")
+        self_result.addTab(self.Subtab_Iehistory, "iehistory")
 
     def process_finished_check(self):
         """
         对当前窗口的执行阶段进行检查，结束的话进行窗体复位
         """
-        if core_status.BasicInfo_status == len(core_status.BasicInfo_modules):
-            core_status.VolProcess = None
+        if core_control.BasicInfo_status == len(core_control.BasicInfo_modules):
+            core_control.VolProcess = None
             self.Btn_start.setEnabled(True)
             self.Btn_start.setText("开始分析")
+
+    def Tab_ClearContents(self):
+        self.Subtab_Pslist.Tab_ClearContents()
+        self.Subtab_Filescan.Tab_ClearContents()
+        self.Subtab_Cmdline.Tab_ClearContents()
+        self.Subtab_Iehistory.Tab_ClearContents()
 
     def process_finished_pslist(self):
         """
@@ -75,7 +80,7 @@ class Tab_BasicInfo(QWidget):
         for row in range(self.Subtab_Pslist.Tab_res.rowCount()):
             self.Subtab_Pslist.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
 
-        core_status.BasicInfo_status += 1
+        core_control.BasicInfo_status += 1
         self.process_finished_check()
 
     def process_finished_filescan(self):
@@ -84,12 +89,12 @@ class Tab_BasicInfo(QWidget):
         """
         res = core_res.get_res("filescan")
         res = core_res.format_res(res, "filescan")
-        Tab_BasicInfo_filescan_res_model = TableModel(res, self.Subtab_filescan.Tab_res_header)
-        self.Subtab_filescan.Tab_res_ProxyModel.setSourceModel(Tab_BasicInfo_filescan_res_model)
-        self.Subtab_filescan.Tab_res_ProxyModel.sort(0, Qt.AscendingOrder)
-        self.Subtab_filescan.Tab_res.setModel(self.Subtab_filescan.Tab_res_ProxyModel)
+        Tab_BasicInfo_filescan_res_model = TableModel(res, self.Subtab_Filescan.Tab_res_header)
+        self.Subtab_Filescan.Tab_res_ProxyModel.setSourceModel(Tab_BasicInfo_filescan_res_model)
+        self.Subtab_Filescan.Tab_res_ProxyModel.sort(0, Qt.AscendingOrder)
+        self.Subtab_Filescan.Tab_res.setModel(self.Subtab_Filescan.Tab_res_ProxyModel)
 
-        core_status.BasicInfo_status += 1
+        core_control.BasicInfo_status += 1
         self.process_finished_check()
 
     def process_finished_cmdline(self):
@@ -100,21 +105,21 @@ class Tab_BasicInfo(QWidget):
         res = core_res.format_res(res, "cmdline")
 
         # 设置表格的行数和列数
-        self.Subtab_cmdline.Tab_res.setRowCount(len(res))
-        self.Subtab_cmdline.Tab_res.setColumnCount(len(res[0]))
+        self.Subtab_Cmdline.Tab_res.setRowCount(len(res))
+        self.Subtab_Cmdline.Tab_res.setColumnCount(len(res[0]))
         # 遍历二维数组，将数据添加到表格中
         for i, row in enumerate(res):
             for j, item in enumerate(row):
                 # 创建 QTableWidgetItem 实例，并设置文本
                 table_item = QTableWidgetItem(item)
                 # 将 QTableWidgetItem 添加到表格的指定位置
-                self.Subtab_cmdline.Tab_res.setItem(i, j, table_item)
+                self.Subtab_Cmdline.Tab_res.setItem(i, j, table_item)
         # 设置 Key 列的文本居中对齐
         key_column = 0
-        for row in range(self.Subtab_cmdline.Tab_res.rowCount()):
-            self.Subtab_cmdline.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
+        for row in range(self.Subtab_Cmdline.Tab_res.rowCount()):
+            self.Subtab_Cmdline.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
 
-        core_status.BasicInfo_status += 1
+        core_control.BasicInfo_status += 1
         self.process_finished_check()
 
     def process_finished_iehistory(self):
@@ -125,19 +130,19 @@ class Tab_BasicInfo(QWidget):
         res = core_res.format_res(res, "iehistory")
 
         # 设置表格的行数和列数
-        self.Subtab_iehistory.Tab_res.setRowCount(len(res))
-        self.Subtab_iehistory.Tab_res.setColumnCount(len(res[0]))
+        self.Subtab_Iehistory.Tab_res.setRowCount(len(res))
+        self.Subtab_Iehistory.Tab_res.setColumnCount(len(res[0]))
         # 遍历二维数组，将数据添加到表格中
         for i, row in enumerate(res):
             for j, item in enumerate(row):
                 # 创建 QTableWidgetItem 实例，并设置文本
                 table_item = QTableWidgetItem(item)
                 # 将 QTableWidgetItem 添加到表格的指定位置
-                self.Subtab_iehistory.Tab_res.setItem(i, j, table_item)
+                self.Subtab_Iehistory.Tab_res.setItem(i, j, table_item)
         # 设置 Key 列的文本居中对齐
         key_column = 0
-        for row in range(self.Subtab_iehistory.Tab_res.rowCount()):
-            self.Subtab_iehistory.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
+        for row in range(self.Subtab_Iehistory.Tab_res.rowCount()):
+            self.Subtab_Iehistory.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
 
-        core_status.BasicInfo_status += 1
+        core_control.BasicInfo_status += 1
         self.process_finished_check()

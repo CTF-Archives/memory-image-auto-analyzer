@@ -35,3 +35,6 @@ class Subtab_Pslist(QWidget):
         self.Tab_res.setColumnWidth(0, 150)
         self.Tab_res.setColumnWidth(1, 150)
         self.Tab_res.setColumnWidth(8, 250)
+
+    def Tab_ClearContents(self):
+        self.Tab_res.clearContents()
