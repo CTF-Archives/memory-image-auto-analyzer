@@ -30,3 +30,9 @@ python3 main.py
 ```shell
 flag|Desktop|.zip$|.rar$|.7z$|.txt$|.png$|.jpg$|.gif$|.pdf$|.doc$|.docx$|.pcap$|.pcapng$|.raw$|.kdbx$
 ```
+
+## 小彩蛋😋
+
+感谢八神提供的梗图：
+
+![Just for fun](./sources/JustForFun.gif)
