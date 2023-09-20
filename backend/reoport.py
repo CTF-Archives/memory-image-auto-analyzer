@@ -8,7 +8,16 @@ class report:
     def __init__(self) -> None:
         super().__init__()
 
-    def generate_excel(self):
+    def generate_Txt(self):
+        pass
+
+    def generate_Excel(self):
+        pass
+
+    def generate_Markdown(self):
+        pass
+
+    def generate_Html(self):
         pass
 
 
