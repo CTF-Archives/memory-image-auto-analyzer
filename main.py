@@ -42,13 +42,11 @@ class MainWindow(QMainWindow):
         menu_file = menu_bar.addMenu(" {} ".format("文件"))
         menu_file.setFont(menu_bar_size)
         action_OpenNewFile = QAction(icon("fa5.file"), "打开内存镜像文件", self)
-        action_OpenNewFile.setStatusTip("打开内存镜像文件")
         action_OpenNewFile.triggered.connect(self.OpenFile)
         menu_file.addAction(action_OpenNewFile)
         # 增加分隔符
         menu_file.addSeparator()
         action_ApplicationQuit = QAction(icon("fa5s.door-open"), "退出", self)
-        action_ApplicationQuit.setStatusTip("退出程序")
         action_ApplicationQuit.triggered.connect(self.closeEvent)
         menu_file.addAction(action_ApplicationQuit)
 
@@ -56,13 +54,14 @@ class MainWindow(QMainWindow):
         menu_help = menu_bar.addMenu(" {} ".format("帮助"))
         menu_help.setFont(menu_bar_size)
         action_ShowLog = QAction(icon("ri.newspaper-line"), "显示日志窗口", self)
-        action_ShowLog.setStatusTip("显示程序日志")
         action_ShowLog.triggered.connect(self.show_log)
         menu_help.addAction(action_ShowLog)
         action_Debug = QAction(icon("ri.newspaper-line"), "Debug 显示输出", self)
-        action_Debug.setStatusTip("打印最新一次输出")
-        action_Debug.triggered.connect(self.Tab_BasicInfo.Tab_ClearContents)
+        action_Debug.triggered.connect(self.process_debug)
         menu_help.addAction(action_Debug)
+        
+    def process_debug(self):
+        print(core_res.res)
 
     def set_Tabs(self):
         """
@@ -135,13 +134,10 @@ class MainWindow(QMainWindow):
                     self.Tab_General.Tab_ClearContents()
                     self.Tab_General.Btn_start.setText("分析中")
                     core_control.VolProcess = [vol_backend_v2(core_control.config["imagefile"], "imageinfo", self.Tab_General.process_finished)]
-                    core_res.clear_res("imageinfo")
                     for i in core_control.VolProcess:
                         i.run()
                 case "BasicInfo":
                     if core_control.check_profile(self):
-                        for i in core_control.BasicInfo_modules:
-                            core_res.clear_res(i)
                         self.Tab_BasicInfo.Tab_ClearContents()
                         # 设置状态变量，跟踪所有子线程是否都已经完成
                         core_control.BasicInfo_status = 0
@@ -180,7 +176,7 @@ if __name__ == "__main__":
     if dark_mode:
         app.setStyleSheet(qdarkstyle.load_stylesheet())
     if DEBUG:
-        core_control.config = {"imagefile": "/home/randark/Snapshot19.vmem", "profile": "Win7SP1x64"}
+        core_control.config = {"imagefile": "/home/randark/Snapshot6.vmem", "profile": "Win7SP1x64"}
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
