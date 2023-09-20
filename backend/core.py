@@ -5,6 +5,7 @@ from PySide6.QtWidgets import *
 
 class control:
     def __init__(self) -> None:
+        super().__init__()
         self.VolProcess = None
         self.BasicInfo_status = 0
         self.BasicInfo_modules = ["pslist", "filescan", "cmdline", "iehistory"]
@@ -35,24 +36,21 @@ class result:
     def __init__(self) -> None:
         self.res = {}
 
-    def clear_res(self, module: str) -> None:
-        """
-        对指定模块的储存进行清空
-        """
-        if module in self.res.keys():
-            self.res.pop(module)
-        else:
-            return "Module is empty"
-
     def add_res(self, module: str, data: str) -> None:
         """
         将结果储存到指定模块
         """
         # 储存扫描结果，module以vol模块格式
         if module not in self.res.keys():
-            self.res[module] = data
+            self.res[module] = {1: {"data": data, "time": datetime.now().isoformat(), "config": core_control.config}}
         else:
-            self.res[module] += data
+            self.res[module][list(self.res[module].keys())[-1] + 1] = {"data": data, "time": datetime.now().isoformat(), "config": core_control.config}
+
+    def get_CurrentIndex(self, module: str) -> int:
+        if module not in self.res.keys():
+            return 0 
+        else:
+            return list(self.res[module].keys())[-1]
 
     def get_res(self, module: str) -> str:
         """
@@ -60,7 +58,10 @@ class result:
         """
         # 调用扫描结果，module以vol模块格式
         if module in self.res.keys():
-            return self.res[module]
+            if self.res[module][list(self.res[module].keys())[-1]]["data"] != None:
+                return self.res[module][list(self.res[module].keys())[-1]]["data"]
+            else:
+                return None
         else:
             return "Module is empty"
 

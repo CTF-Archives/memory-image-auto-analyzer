@@ -4,14 +4,13 @@ from backend.core import core_res
 
 
 class vol_backend_v2(QProcess):
-    # FIXME 后端改写，换为QThreadPool和QRunnable
-
     def __init__(self, imagefile: str, module: str, func_finished, profile=None) -> None:
         super().__init__()
         self.imagefile = imagefile
         self.module = module
         self.func_finished = func_finished
         self.profile = profile
+        self.current_index = core_res.get_CurrentIndex(self.module)
 
     def run(self):
         """
@@ -49,3 +48,5 @@ class vol_backend_v2(QProcess):
         }
         state_name = states[state]
         logging.debug(f"State changed: {state_name}")
+        if state == QProcess.NotRunning and self.current_index == core_res.get_CurrentIndex(self.module):
+            core_res.add_res(self.module, None)

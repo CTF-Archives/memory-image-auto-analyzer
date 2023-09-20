@@ -63,23 +63,25 @@ class Tab_BasicInfo(QWidget):
         """
         logging.info("Process finished.")
         res = core_res.get_res("pslist")
-        res = core_res.format_res(res, "pslist")
+        if res == None:
+            self.warning_DataEmpty("pslist")
+        else:
+            res = core_res.format_res(res, "pslist")
 
-        # 设置表格的行数和列数
-        self.Subtab_Pslist.Tab_res.setRowCount(len(res))
-        self.Subtab_Pslist.Tab_res.setColumnCount(len(res[0]))
-        # 遍历二维数组，将数据添加到表格中
-        for i, row in enumerate(res):
-            for j, item in enumerate(row):
-                # 创建 QTableWidgetItem 实例，并设置文本
-                table_item = QTableWidgetItem(item)
-                # 将 QTableWidgetItem 添加到表格的指定位置
-                self.Subtab_Pslist.Tab_res.setItem(i, j, table_item)
-        # 设置 Key 列的文本居中对齐
-        key_column = 0
-        for row in range(self.Subtab_Pslist.Tab_res.rowCount()):
-            self.Subtab_Pslist.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
-
+            # 设置表格的行数和列数
+            self.Subtab_Pslist.Tab_res.setRowCount(len(res))
+            self.Subtab_Pslist.Tab_res.setColumnCount(len(res[0]))
+            # 遍历二维数组，将数据添加到表格中
+            for i, row in enumerate(res):
+                for j, item in enumerate(row):
+                    # 创建 QTableWidgetItem 实例，并设置文本
+                    table_item = QTableWidgetItem(item)
+                    # 将 QTableWidgetItem 添加到表格的指定位置
+                    self.Subtab_Pslist.Tab_res.setItem(i, j, table_item)
+            # 设置 Key 列的文本居中对齐
+            key_column = 0
+            for row in range(self.Subtab_Pslist.Tab_res.rowCount()):
+                self.Subtab_Pslist.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
         core_control.BasicInfo_status += 1
         self.process_finished_check()
 
@@ -88,12 +90,14 @@ class Tab_BasicInfo(QWidget):
         filescan模块执行完毕
         """
         res = core_res.get_res("filescan")
-        res = core_res.format_res(res, "filescan")
-        Tab_BasicInfo_filescan_res_model = TableModel(res, self.Subtab_Filescan.Tab_res_header)
-        self.Subtab_Filescan.Tab_res_ProxyModel.setSourceModel(Tab_BasicInfo_filescan_res_model)
-        self.Subtab_Filescan.Tab_res_ProxyModel.sort(0, Qt.AscendingOrder)
-        self.Subtab_Filescan.Tab_res.setModel(self.Subtab_Filescan.Tab_res_ProxyModel)
-
+        if res == None:
+            self.warning_DataEmpty("filescan")
+        else:
+            res = core_res.format_res(res, "filescan")
+            Tab_BasicInfo_filescan_res_model = TableModel(res, self.Subtab_Filescan.Tab_res_header)
+            self.Subtab_Filescan.Tab_res_ProxyModel.setSourceModel(Tab_BasicInfo_filescan_res_model)
+            self.Subtab_Filescan.Tab_res_ProxyModel.sort(0, Qt.AscendingOrder)
+            self.Subtab_Filescan.Tab_res.setModel(self.Subtab_Filescan.Tab_res_ProxyModel)
         core_control.BasicInfo_status += 1
         self.process_finished_check()
 
@@ -102,23 +106,25 @@ class Tab_BasicInfo(QWidget):
         cmdline模块执行完毕
         """
         res = core_res.get_res("cmdline")
-        res = core_res.format_res(res, "cmdline")
-
-        # 设置表格的行数和列数
-        self.Subtab_Cmdline.Tab_res.setRowCount(len(res))
-        self.Subtab_Cmdline.Tab_res.setColumnCount(len(res[0]))
-        # 遍历二维数组，将数据添加到表格中
-        for i, row in enumerate(res):
-            for j, item in enumerate(row):
-                # 创建 QTableWidgetItem 实例，并设置文本
-                table_item = QTableWidgetItem(item)
-                # 将 QTableWidgetItem 添加到表格的指定位置
-                self.Subtab_Cmdline.Tab_res.setItem(i, j, table_item)
-        # 设置 Key 列的文本居中对齐
-        key_column = 0
-        for row in range(self.Subtab_Cmdline.Tab_res.rowCount()):
-            self.Subtab_Cmdline.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
-
+        if res == None:
+            self.warning_DataEmpty("cmdline")
+        else:
+            res = core_res.format_res(res, "cmdline")
+            
+            # 设置表格的行数和列数
+            self.Subtab_Cmdline.Tab_res.setRowCount(len(res))
+            self.Subtab_Cmdline.Tab_res.setColumnCount(len(res[0]))
+            # 遍历二维数组，将数据添加到表格中
+            for i, row in enumerate(res):
+                for j, item in enumerate(row):
+                    # 创建 QTableWidgetItem 实例，并设置文本
+                    table_item = QTableWidgetItem(item)
+                    # 将 QTableWidgetItem 添加到表格的指定位置
+                    self.Subtab_Cmdline.Tab_res.setItem(i, j, table_item)
+            # 设置 Key 列的文本居中对齐
+            key_column = 0
+            for row in range(self.Subtab_Cmdline.Tab_res.rowCount()):
+                self.Subtab_Cmdline.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
         core_control.BasicInfo_status += 1
         self.process_finished_check()
 
@@ -127,22 +133,31 @@ class Tab_BasicInfo(QWidget):
         iehistory模块执行完毕
         """
         res = core_res.get_res("iehistory")
-        res = core_res.format_res(res, "iehistory")
+        if res == None:
+            self.warning_DataEmpty("iehistory")
+        else:
+            res = core_res.format_res(res, "iehistory")
 
-        # 设置表格的行数和列数
-        self.Subtab_Iehistory.Tab_res.setRowCount(len(res))
-        self.Subtab_Iehistory.Tab_res.setColumnCount(len(res[0]))
-        # 遍历二维数组，将数据添加到表格中
-        for i, row in enumerate(res):
-            for j, item in enumerate(row):
-                # 创建 QTableWidgetItem 实例，并设置文本
-                table_item = QTableWidgetItem(item)
-                # 将 QTableWidgetItem 添加到表格的指定位置
-                self.Subtab_Iehistory.Tab_res.setItem(i, j, table_item)
-        # 设置 Key 列的文本居中对齐
-        key_column = 0
-        for row in range(self.Subtab_Iehistory.Tab_res.rowCount()):
-            self.Subtab_Iehistory.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
-
+            # 设置表格的行数和列数
+            self.Subtab_Iehistory.Tab_res.setRowCount(len(res))
+            self.Subtab_Iehistory.Tab_res.setColumnCount(len(res[0]))
+            # 遍历二维数组，将数据添加到表格中
+            for i, row in enumerate(res):
+                for j, item in enumerate(row):
+                    # 创建 QTableWidgetItem 实例，并设置文本
+                    table_item = QTableWidgetItem(item)
+                    # 将 QTableWidgetItem 添加到表格的指定位置
+                    self.Subtab_Iehistory.Tab_res.setItem(i, j, table_item)
+            # 设置 Key 列的文本居中对齐
+            key_column = 0
+            for row in range(self.Subtab_Iehistory.Tab_res.rowCount()):
+                self.Subtab_Iehistory.Tab_res.item(row, key_column).setTextAlignment(Qt.AlignCenter)
         core_control.BasicInfo_status += 1
         self.process_finished_check()
+
+    def warning_DataEmpty(self, module):
+        logging.warning("模块无数据")
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Warning!")
+        dlg.setText("模块名称: {muddle_name} 无数据".format(muddle_name=module))
+        dlg.exec()
