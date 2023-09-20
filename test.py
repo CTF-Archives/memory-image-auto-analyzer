@@ -39,7 +39,7 @@ Offset(P)            #Ptr   #Hnd Access Name
 0x000000003e032500      1      1 R--rw- \Device\HarddiskVolume2\Windows\winsxs\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.7601.17514_none_fa396087175ac9ac
 
 """
-from backend.res import core_res
+from backend.core import core_res
 
 res = core_res.format_res(a, "filescan")
 for i in res:
