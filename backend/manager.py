@@ -3,10 +3,20 @@ import docker
 
 
 class manager:
-    def __init__(self) -> None:
+    def __init__(self, mode: str, config: tuple) -> None:
         super().__init__()
+        self.client = None
+        match mode:
+            case "SSH":
+                self.manager_SSH(config["host"], config["username"], config["password"])
+            case "Docker":
+                self.maneger_Docker(config["mdde"], config["remote_tls"])
+            case "LocalTerminal":
+                self.manager_LocateShell()
+            case _:
+                pass
 
-    def manager_SSH(self):
+    def manager_SSH(self, host: str, username: str, password: str):
         # Just an example
         host = "YOUR_IP_ADDRESS"
         username = "YOUR_LIMITED_USER_ACCOUNT"
