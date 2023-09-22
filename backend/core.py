@@ -42,13 +42,23 @@ class result:
         """
         # 储存扫描结果，module以vol模块格式
         if module not in self.res.keys():
-            self.res[module] = {1: {"data": data, "time": datetime.now().isoformat(), "config": core_control.config}}
+            self.res[module] = {
+                1: {
+                    "data": data,
+                    "time": datetime.now().isoformat(),
+                    "config": core_control.config,
+                }
+            }
         else:
-            self.res[module][list(self.res[module].keys())[-1] + 1] = {"data": data, "time": datetime.now().isoformat(), "config": core_control.config}
+            self.res[module][list(self.res[module].keys())[-1] + 1] = {
+                "data": data,
+                "time": datetime.now().isoformat(),
+                "config": core_control.config,
+            }
 
     def get_CurrentIndex(self, module: str) -> int:
         if module not in self.res.keys():
-            return 0 
+            return 0
         else:
             return list(self.res[module].keys())[-1]
 
@@ -98,7 +108,19 @@ class result:
                     modified_time = res_tmp[i + 4].strip().split(":", 1)[1].strip()
                     accessed_time = res_tmp[i + 5].strip().split(":", 1)[1].strip()
                     File_Offset, Data_Offset, Data_Length = [i.strip().split(":")[1].strip() for i in res_tmp[i + 6].strip().split(",")]
-                    res.append([name, pid, user, filepath, modified_time, accessed_time, File_Offset, Data_Offset, Data_Length])
+                    res.append(
+                        [
+                            name,
+                            pid,
+                            user,
+                            filepath,
+                            modified_time,
+                            accessed_time,
+                            File_Offset,
+                            Data_Offset,
+                            Data_Length,
+                        ]
+                    )
             case "filescan":
                 res = [i.strip().split(" ") for i in data[2:]]
                 for offset, sub in enumerate(res):
@@ -111,3 +133,4 @@ class result:
 
 core_res = result()
 core_control = control()
+core_MainWIndow = None

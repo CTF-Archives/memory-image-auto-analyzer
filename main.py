@@ -6,12 +6,13 @@ from PySide6.QtGui import QAction
 import qdarkstyle
 import logging
 from qtawesome import icon
-from layout.window_log import LogWindow
+from layout.window_log import Window_Log
 from layout.tab_general import Tab_General
 from layout.tab_basicinfo import Tab_BasicInfo
 from layout.tab_credential import Tab_Credential
+from layout.window_filedialog import Window_FileDialog
 from backend.vol import vol_backend_v2
-from backend.core import core_control, core_res
+from backend.core import core_control, core_res, core_MainWIndow
 
 os.environ["QT_API"] = "pyside6"
 res = ""
@@ -27,9 +28,13 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1300, 700)
 
         # 设置框体部件
-        self.LogWindow = LogWindow()
+        self.LogWindow = Window_Log()
         self.set_Tabs()
         self.set_MenuBar()
+
+        # 主窗体对象传递
+        core_MainWIndow = self
+        logging.debug("MainWindow class share successful! {}".format(core_MainWIndow.windowRole()))
 
     def set_MenuBar(self):
         menu_bar = self.menuBar()
@@ -42,7 +47,7 @@ class MainWindow(QMainWindow):
         menu_file = menu_bar.addMenu(" {} ".format("文件"))
         menu_file.setFont(menu_bar_size)
         action_OpenNewFile = QAction(icon("fa5.file"), "打开内存镜像文件", self)
-        action_OpenNewFile.triggered.connect(self.OpenFile)
+        action_OpenNewFile.triggered.connect(Window_FileDialog.OpenFile)
         menu_file.addAction(action_OpenNewFile)
         # 增加分隔符
         menu_file.addSeparator()
@@ -59,7 +64,7 @@ class MainWindow(QMainWindow):
         action_Debug = QAction(icon("ri.newspaper-line"), "Debug 显示输出", self)
         action_Debug.triggered.connect(self.process_debug)
         menu_help.addAction(action_Debug)
-        
+
     def process_debug(self):
         print(core_res.res)
 
@@ -81,10 +86,10 @@ class MainWindow(QMainWindow):
         self.Tab_BasicInfo.Btn_start.pressed.connect(self.process_BasicInfo)
         self.tabWidget.addTab(self.Tab_BasicInfo, "基础信息")
 
-        # 凭据信息页面
+        """ # 凭据信息页面
         self.Tab_Credential = Tab_Credential()
         self.Tab_Credential.Btn_start.pressed.connect(self.process_Credential)
-        self.tabWidget.addTab(self.Tab_Credential, "凭据信息")
+        self.tabWidget.addTab(self.Tab_Credential, "凭据信息") """
 
     def process_General(self):
         self.start_process("General")
@@ -113,13 +118,6 @@ class MainWindow(QMainWindow):
         res = core_res.format_res(res, module)
         print(res)
 
-    # 选取镜像文件
-    def OpenFile(self):
-        filename = QFileDialog.getOpenFileName(parent=self, caption="选择镜像文件", dir=".", filter="*")[0]
-        if filename:
-            core_control.config["imagefile"] = filename
-            logging.info("select image file:" + filename)
-
     def start_process(self, module: str):
         """
         开始启动分析线程，仅在这里使用集合化模块指令
@@ -133,7 +131,13 @@ class MainWindow(QMainWindow):
                     self.Tab_General.Btn_start.setEnabled(False)
                     self.Tab_General.Tab_ClearContents()
                     self.Tab_General.Btn_start.setText("分析中")
-                    core_control.VolProcess = [vol_backend_v2(core_control.config["imagefile"], "imageinfo", self.Tab_General.process_finished)]
+                    core_control.VolProcess = [
+                        vol_backend_v2(
+                            core_control.config["imagefile"],
+                            "imageinfo",
+                            self.Tab_General.process_finished,
+                        )
+                    ]
                     for i in core_control.VolProcess:
                         i.run()
                 case "BasicInfo":
@@ -145,10 +149,30 @@ class MainWindow(QMainWindow):
                         self.Tab_BasicInfo.Btn_start.setText("分析中")
                         # 核心线程储存变量使用列表对象进行复用
                         core_control.VolProcess = [
-                            vol_backend_v2(core_control.config["imagefile"], "pslist", self.Tab_BasicInfo.process_finished_pslist, profile=core_control.config["profile"]),
-                            vol_backend_v2(core_control.config["imagefile"], "filescan", self.Tab_BasicInfo.process_finished_filescan, profile=core_control.config["profile"]),
-                            vol_backend_v2(core_control.config["imagefile"], "cmdline", self.Tab_BasicInfo.process_finished_cmdline, profile=core_control.config["profile"]),
-                            vol_backend_v2(core_control.config["imagefile"], "iehistory", self.Tab_BasicInfo.process_finished_iehistory, profile=core_control.config["profile"]),
+                            vol_backend_v2(
+                                core_control.config["imagefile"],
+                                "pslist",
+                                self.Tab_BasicInfo.process_finished_pslist,
+                                profile=core_control.config["profile"],
+                            ),
+                            vol_backend_v2(
+                                core_control.config["imagefile"],
+                                "filescan",
+                                self.Tab_BasicInfo.process_finished_filescan,
+                                profile=core_control.config["profile"],
+                            ),
+                            vol_backend_v2(
+                                core_control.config["imagefile"],
+                                "cmdline",
+                                self.Tab_BasicInfo.process_finished_cmdline,
+                                profile=core_control.config["profile"],
+                            ),
+                            vol_backend_v2(
+                                core_control.config["imagefile"],
+                                "iehistory",
+                                self.Tab_BasicInfo.process_finished_iehistory,
+                                profile=core_control.config["profile"],
+                            ),
                         ]
                         for i in core_control.VolProcess:
                             i.run()
@@ -158,7 +182,7 @@ class MainWindow(QMainWindow):
 
     def warning_ProcessConflict(self):
         logging.warning("程序正忙")
-        dlg = QMessageBox(self)
+        dlg = QMessageBox(core_MainWIndow)
         dlg.setWindowTitle("Warning!")
         dlg.setText("当前正在运行: {muddle_name}".format(muddle_name=", ".join([i.module for i in core_control.VolProcess])))
         dlg.exec()
@@ -176,7 +200,10 @@ if __name__ == "__main__":
     if dark_mode:
         app.setStyleSheet(qdarkstyle.load_stylesheet())
     if DEBUG:
-        core_control.config = {"imagefile": "/home/randark/Snapshot6.vmem", "profile": "Win7SP1x64"}
+        core_control.config = {
+            "imagefile": "/home/randark/Snapshot6.vmem",
+            "profile": "Win7SP1x64",
+        }
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

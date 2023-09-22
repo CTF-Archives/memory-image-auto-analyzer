@@ -1,7 +1,8 @@
-from PySide6.QtWidgets import *
 import logging
-from backend.core import core_control, core_res
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import *
+from backend.core import core_control, core_res
+from backend.reoport import core_report
 
 
 class Tab_General(QWidget):
@@ -20,10 +21,9 @@ class Tab_General(QWidget):
 
         # 设置第一栏控制栏, 开始分析的按钮
         self.Btn_start = QPushButton("开始分析")
-
         Tab_control_layout.addWidget(self.Btn_start)
-        # 导出报告的按钮
         self.Btn_export = QPushButton("导出报告")
+        self.Btn_export.clicked.connect(self.process_report)
 
         # TODO 增加导出报告的功能
         Tab_control_layout.addWidget(self.Btn_export)
@@ -74,3 +74,6 @@ class Tab_General(QWidget):
 
     def Tab_ClearContents(self):
         self.Subtab_ImageInfo.clearContents()
+
+    def process_report(self):
+        core_report.run()
