@@ -1,4 +1,11 @@
-from PySide6.QtWidgets import QVBoxLayout, QLabel, QPushButton, QWidget, QMainWindow, QApplication
+from PySide6.QtWidgets import (
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QWidget,
+    QMainWindow,
+    QApplication,
+)
 from PySide6.QtCore import QTimer, QRunnable, Slot, Signal, QObject, QThreadPool
 
 import sys

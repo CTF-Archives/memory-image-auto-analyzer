@@ -38,7 +38,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         data = pd.DataFrame(
             [
-                ["SuggestedProfile(s)", "Win7SP1x64,Win7SP0x64,Win2008R2SP0x64,Win2008R2SP1x64_24000,Win2008R2SP1x64_23418,Win2008R2SP1x64,Win7SP1x64_24000,Win7SP1x64_23418"],
+                [
+                    "SuggestedProfile(s)",
+                    "Win7SP1x64,Win7SP0x64,Win2008R2SP0x64,Win2008R2SP1x64_24000,Win2008R2SP1x64_23418,Win2008R2SP1x64,Win7SP1x64_24000,Win7SP1x64_23418",
+                ],
                 ["ASLayer1", "WindowsAMD64PagedMemory(KernelAS)"],
                 ["ASLayer2", "FileAddressSpace(/home/randark/Snapshot6.vmem)"],
                 ["PAEtype", "NoPAE"],
@@ -52,7 +55,20 @@ class MainWindow(QtWidgets.QMainWindow):
                 ["Imagelocaldateandtime", "2020-12-2622", "20", "05-0800"],
             ],
             columns=["A", "B", "C", "D"],
-            index=["Row 1", "Row 2", "Row 3", "Row 4", "Row 5", "Row 5", "Row 5", "Row 5", "Row 5", "Row 5", "Row 5", "Row 5"],
+            index=[
+                "Row 1",
+                "Row 2",
+                "Row 3",
+                "Row 4",
+                "Row 5",
+                "Row 5",
+                "Row 5",
+                "Row 5",
+                "Row 5",
+                "Row 5",
+                "Row 5",
+                "Row 5",
+            ],
         )
 
         self.model = TableModel(data)

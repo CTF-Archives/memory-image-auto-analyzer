@@ -1,6 +1,19 @@
 import sys
-from PySide6.QtWidgets import QApplication, QWidget, QTableView, QMainWindow, QVBoxLayout, QLineEdit, QHeaderView
-from PySide6.QtCore import Qt, QSortFilterProxyModel, QAbstractTableModel, QRegularExpression
+from PySide6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QTableView,
+    QMainWindow,
+    QVBoxLayout,
+    QLineEdit,
+    QHeaderView,
+)
+from PySide6.QtCore import (
+    Qt,
+    QSortFilterProxyModel,
+    QAbstractTableModel,
+    QRegularExpression,
+)
 
 
 class TableModel(QAbstractTableModel):

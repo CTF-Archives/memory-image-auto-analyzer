@@ -1,4 +1,13 @@
-from PySide6.QtWidgets import QTableWidget, QLineEdit, QPushButton, QApplication, QMainWindow, QVBoxLayout, QWidget, QTableWidgetItem
+from PySide6.QtWidgets import (
+    QTableWidget,
+    QLineEdit,
+    QPushButton,
+    QApplication,
+    QMainWindow,
+    QVBoxLayout,
+    QWidget,
+    QTableWidgetItem,
+)
 from PySide6.QtCore import Qt
 
 import random, string, sys
