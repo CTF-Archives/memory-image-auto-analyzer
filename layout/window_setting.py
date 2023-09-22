@@ -15,7 +15,7 @@ class QTextEditLogger(logging.Handler):
         self.widget.appendPlainText(msg)
 
 
-class LogWindow(QWidget):
+class Window_Setting(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 

@@ -15,7 +15,17 @@ class Subtab_Pslist(QWidget):
 
         # 设置表格输出形式
         self.Tab_res.setRowCount(5)
-        horizontal_header_labels = ["Offset(V)", "Name", "PID", "PPID", "Thds", "Hnds", "Sess", "Wow64", "Start"]
+        horizontal_header_labels = [
+            "Offset(V)",
+            "Name",
+            "PID",
+            "PPID",
+            "Thds",
+            "Hnds",
+            "Sess",
+            "Wow64",
+            "Start",
+        ]
         self.Tab_res.setColumnCount(len(horizontal_header_labels))
         self.Tab_res.setHorizontalHeaderLabels(horizontal_header_labels)
 

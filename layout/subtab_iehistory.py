@@ -17,7 +17,17 @@ class Subtab_Iehistory(QWidget):
 
         # 设置表格输出形式
         self.Tab_res.setRowCount(5)
-        horizontal_header_labels = ["name", "pid", "user", "filepath", "modified time", "accessed time", "File Offset", "Data Offset", "Data Length"]
+        horizontal_header_labels = [
+            "name",
+            "pid",
+            "user",
+            "filepath",
+            "modified time",
+            "accessed time",
+            "File Offset",
+            "Data Offset",
+            "Data Length",
+        ]
         self.Tab_res.setColumnCount(len(horizontal_header_labels))
         self.Tab_res.setHorizontalHeaderLabels(horizontal_header_labels)
 

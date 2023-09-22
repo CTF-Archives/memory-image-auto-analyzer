@@ -1,5 +1,10 @@
 from PySide6.QtWidgets import *
-from PySide6.QtCore import Qt, QSortFilterProxyModel, QRegularExpression, QAbstractTableModel
+from PySide6.QtCore import (
+    Qt,
+    QSortFilterProxyModel,
+    QRegularExpression,
+    QAbstractTableModel,
+)
 
 
 class TableModel(QAbstractTableModel):

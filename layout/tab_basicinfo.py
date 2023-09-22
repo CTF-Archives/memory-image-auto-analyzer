@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import *
 import logging
 from PySide6.QtCore import Qt
-from backend.core import core_control, core_res
+from backend.core import core_control, core_res, core_MainWIndow
 from layout.subtab_pslist import Subtab_Pslist
 from layout.subtab_filescan import Subtab_Filescan, TableModel
 from layout.subtab_cmdline import Subtab_Cmdline
@@ -110,7 +110,7 @@ class Tab_BasicInfo(QWidget):
             self.warning_DataEmpty("cmdline")
         else:
             res = core_res.format_res(res, "cmdline")
-            
+
             # 设置表格的行数和列数
             self.Subtab_Cmdline.Tab_res.setRowCount(len(res))
             self.Subtab_Cmdline.Tab_res.setColumnCount(len(res[0]))
@@ -157,7 +157,7 @@ class Tab_BasicInfo(QWidget):
 
     def warning_DataEmpty(self, module):
         logging.warning("模块无数据")
-        dlg = QMessageBox(self)
+        dlg = QMessageBox(core_MainWIndow)
         dlg.setWindowTitle("Warning!")
         dlg.setText("模块名称: {muddle_name} 无数据".format(muddle_name=module))
         dlg.exec()

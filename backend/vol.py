@@ -23,8 +23,14 @@ class vol_backend_v2(QProcess):
         # self.process.finished.connect(self.process_finished)
         self.process.finished.connect(self.func_finished)
         if self.profile != None:
-            print("vol.py", " ".join(["-f", self.imagefile, "--profile=" + self.profile, self.module]))
-            self.process.start("vol.py", ["-f", self.imagefile, "--profile=" + self.profile, self.module])
+            print(
+                "vol.py",
+                " ".join(["-f", self.imagefile, "--profile=" + self.profile, self.module]),
+            )
+            self.process.start(
+                "vol.py",
+                ["-f", self.imagefile, "--profile=" + self.profile, self.module],
+            )
         else:
             print("vol.py", " ".join(["-f", self.imagefile, self.module]))
             self.process.start("vol.py", ["-f", self.imagefile, self.module])
